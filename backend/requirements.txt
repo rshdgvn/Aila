@@ -1,8 +1,9 @@
 fastapi
 uvicorn
+sqlalchemy
 pydantic
+pydantic[email]
+pyjwt
+passlib[bcrypt]
 python-dotenv
-google-generativeai
-pandas
-osmium
-jwt
+requests
