@@ -51,6 +51,3 @@ Every completed trip is securely saved to your profile. Review your total distan
 
 ### AI Engine
 * **Google Gemini**: Powering the "Interactive Buddy" for real-time contextual updates.
-
----
-Developed by **BSIS Students** · **La Verdad Christian College**
