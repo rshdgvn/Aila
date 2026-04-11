@@ -1,68 +1,43 @@
-import { useState, useEffect } from 'react'
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
-import Login from './pages/Login'
-import Register from './pages/Register'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { useAuth } from './contexts/AuthContext'
 import Dashboard from './pages/Dashboard'
-import Home from './pages/Home'
-import type { AuthUser } from './api'
-
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000/api'
+import NewTravel from './pages/NewTravel'
+import ActiveJourney from './pages/ActiveJourney'
+import Home from "./pages/Home"
+import Register from './pages/Register'
+import Login from './pages/Login'
 
 export default function App() {
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const [loading, setLoading] = useState(true)
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    const token = localStorage.getItem('aila_token')
-    
-    if (!token) {
-      setLoading(false)
-      return
-    }
-
-    fetch(`${API_BASE}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data?.email) {
-          setUser(data)
-        } else {
-          localStorage.removeItem('aila_token')
-        }
-      })
-      .catch(() => localStorage.removeItem('aila_token'))
-      .finally(() => setLoading(false))
-  }, [])
-
-  const handleAuthSuccess = (token: string, userData: AuthUser) => {
-    localStorage.setItem('aila_token', token)
-    setUser(userData)
-    navigate('/dashboard')
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('aila_token')
-    setUser(null)
-    navigate('/login')
-  }
+  const { user, loading } = useAuth()
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center flex-col gap-4">
-        <div className="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4">
+        <div className="relative">
+          <div className="w-20 h-20 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+          <img 
+            src="/aila-body-only.png" 
+            alt="Loading" 
+            className="w-10 h-10 absolute inset-0 m-auto animate-pulse" 
+          />
+        </div>
+        <p className="text-slate-400 font-black uppercase tracking-widest text-xs">Loading Aila...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white text-blue-900 font-sans selection:bg-blue-200">
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900">
       <Routes>
         <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Home />} />
-        <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login onAuthSuccess={handleAuthSuccess} />} />
-        <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register onAuthSuccess={handleAuthSuccess} />} />
-        <Route path="/dashboard" element={user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
+        <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+        <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
+        
+        <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
+        <Route path="/new-travel" element={user ? <NewTravel /> : <Navigate to="/login" />} />
+        <Route path="/active-journey" element={user ? <ActiveJourney /> : <Navigate to="/login" />} />
+        
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </div>
   )

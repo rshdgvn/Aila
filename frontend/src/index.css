@@ -1,2 +1,22 @@
 @import "tailwindcss";
 
+
+@keyframes aila-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes aila-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px) rotate(-5deg); }
+  75% { transform: translateX(5px) rotate(5deg); }
+}
+
+@keyframes aila-celebrate {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1) translateY(-15px); }
+}
+
+.animate-aila-float { animation: aila-float 3s ease-in-out infinite; }
+.animate-aila-shake { animation: aila-shake 0.5s ease-in-out infinite; }
+.animate-aila-celebrate { animation: aila-celebrate 0.6s ease-in-out infinite; }
