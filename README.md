@@ -1,41 +1,39 @@
-# <img src="frontend/public/aila-icon.png" width="28" vertical-align="middle"> Aila: Your AI Travel Buddy
-
-**Intelligent Journey Tracking and Analytics, Powered by AI.**
+# <img src="frontend/public/aila-icon.png" width="28" vertical-align="middle"> Aila: Your Trip Assistant
 
 ## What is Aila?
 <img src="frontend/public/aila-relax.png" width="200" align="right" />
 
-The name **Aila** originates from the Filipino word **Agila** (Eagle). Just like the eagle, Aila provides a "bird's-eye view" of your travel habits, helping you soar through your daily commutes with intelligence and ease.
+The name **Aila** originates from the Filipino word **Agila** (Eagle). Just like the eagle, Aila provides a "bird's-eye view" of your travel, helping you soar through your daily commutes with intelligence, safety, and ease.
 
-Aila is an intelligent AI travel companion designed to track, analyze, and optimize your journeys. Whether you are driving through the city or navigating public transit, Aila turns your raw trip history into meaningful insights through a personalized, mobile-friendly experience.
+Aila is an intelligent trip assistant designed to track your journeys, optimize your routes, and keep your loved ones in the loop. Whether you are driving through the city or navigating public transit, Aila turns every trip into a stress-free experience through real-time AI assistance and effortless sharing.
 
 ---
 
 ## Core Features
 
-### Smart Route Finder
-Find the best path for your destination. Aila calculates routes for both **Driving** and **Public Transit**, including accurate fare estimations so you know your budget before you board.
+### Intelligent Route Optimization
+Find the best path for your destination instantly. Aila calculates routes for both **Driving** and **Public Transit**, providing accurate fare and fuel estimations so you know your budget before you step out the door.
 
-### Interactive AI Buddy
-<img src="public/aila-icon.png" width="30" align="left" /> **Aila isn't just a dashboard—she’s a companion.** Ask her questions like *"Asan na ba tayo?"* to get live, contextual updates on your location, ETA, and journey progress.
+### Meet Aila, Your Trip Assistant
+<img src="frontend/public/aila-icon.png" width="30" align="left" /> **Aila isn't just an app—it’s your trip assistant.** Eliminate travel anxiety by asking her questions like *"Asan na ba tayo?"* to get live, contextual updates on your location, ETA, and journey progress.
 
-### Live Journey Tracking
-Start your trip and let Aila handle the rest. She tracks your entire journey in the background, logging your distance in kilometers and duration in minutes with 100% accuracy.
+### Seamless Background Tracking
+Start your trip and let Aila handle the rest. Focus on the journey while she automatically tracks your exact route, distance in kilometers, and duration in minutes in the background with 100% accuracy.
 
-### Personal Journey Dashboard
-Every completed trip is securely saved to your profile. Review your total distance traveled, past routes, and travel history to see how you move over time.
+### Effortless Trip Sharing
+Keep your loved ones in the loop. Share your live location, chosen route, and exact ETA with friends and family in just one tap for ultimate peace of mind. 
 
 ---
 
 ## How it Works
 
-1.  **Find your route:** Choose between driving or transit. Aila calculates the best path and shows you the details, including commute fares.
-2.  **Start & Chat:** Begin tracking your journey. Talk to Aila along the way for live updates on your location or ETA.
-3.  **Save your trip:** Once you arrive, your journey is logged securely into your dashboard for future reference.
+1.  **Find your route:** Choose between driving or transit. Aila calculates the best path and shows you the details, including commute fares and estimated costs.
+2.  **Start, Chat & Share:** Begin tracking your journey. Talk to Aila along the way for live updates, and easily share your live trip details with friends so they know you are safe.
+3.  **Arrive securely:** Once you arrive, your completed journey is securely logged into your history for easy reference.
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 ### Frontend
 * **React**: Core framework for a fast, reactive user interface.
@@ -50,4 +48,4 @@ Every completed trip is securely saved to your profile. Review your total distan
 * **JWT Authentication**: Secure, token-based user security.
 
 ### AI Engine
-* **Google Gemini**: Powering the "Interactive Buddy" for real-time contextual updates.
+* **Google Gemini**: Powering the trip assistant for real-time contextual updates.
