@@ -23,7 +23,7 @@ import {
   Car,
   MapPin,
   Navigation,
-  Clock
+  Clock,
 } from "lucide-react";
 import { tripsApi, ailaApi } from "../config/api";
 
@@ -114,7 +114,9 @@ export default function ActiveJourney() {
 
   const [currentStepIdx, setCurrentStepIdx] = useState(0);
   const [isLiveGPS, setIsLiveGPS] = useState(true);
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(
+    null,
+  );
 
   const [chatInput, setChatInput] = useState("");
   const [loadingAila, setLoadingAila] = useState(false);
@@ -257,7 +259,9 @@ export default function ActiveJourney() {
         <div className="w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center">
           <Loader2 className="animate-spin text-indigo-600" size={32} />
         </div>
-        <p className="text-slate-500 font-bold tracking-wide">Plotting your journey...</p>
+        <p className="text-slate-500 font-bold tracking-wide">
+          Plotting your journey...
+        </p>
       </div>
     );
   }
@@ -272,11 +276,11 @@ export default function ActiveJourney() {
       className="h-screen bg-slate-50 flex flex-col md:flex-row font-sans overflow-hidden text-slate-900"
       style={{ fontFamily: '"Raleway", sans-serif' }}
     >
-      <div className="w-full md:w-[380px] lg:w-[420px] bg-[#f8f9ff] border-r border-indigo-100 flex flex-col z-20 shadow-2xl shrink-0 h-[50vh] md:h-full transition-all">
-        <header className="p-6 border-b border-indigo-50 bg-white flex items-center gap-5 shrink-0 relative overflow-hidden">
+      <div className="w-full md:w-[380px] lg:w-[420px] bg-[#f8f9ff] border-r border-indigo-100 flex flex-col z-20 shadow-2xl shrink-0 h-[55vh] md:h-full transition-all">
+        <header className="p-4 sm:p-6 border-b border-indigo-50 bg-white flex items-center gap-4 sm:gap-5 shrink-0 relative overflow-hidden">
           <div className="absolute -right-10 -top-10 w-40 h-40 bg-indigo-50/50 rounded-full blur-3xl"></div>
-          
-          <div className="w-20 h-20 shrink-0 relative">
+
+          <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 relative">
             <div className="absolute inset-0 bg-indigo-100 rounded-full blur-xl pointer-events-none opacity-60"></div>
             <img
               src={EMOTION_ASSETS[currentEmotion] || "/aila-relax.png"}
@@ -284,37 +288,43 @@ export default function ActiveJourney() {
               alt="Aila"
             />
           </div>
-          <div className="flex flex-col z-10">
+          <div className="flex flex-col z-10 min-w-0">
             <h2
               style={{ fontFamily: '"Sora", sans-serif' }}
-              className="font-extrabold text-[#0d1f5c] text-2xl tracking-tight"
+              className="font-extrabold text-[#0d1f5c] text-xl sm:text-2xl tracking-tight"
             >
               Aila
             </h2>
             <div className="flex items-center gap-2 mt-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <p className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+              <p className="text-[11px] sm:text-[12px] font-bold text-slate-500 uppercase tracking-wider truncate">
                 Assisting you live
               </p>
             </div>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white no-scrollbar">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 bg-white no-scrollbar">
           {messages.map((msg, i) => (
             <div
               key={i}
               className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
-              <div className={`flex gap-3 max-w-[85%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
+              <div
+                className={`flex gap-2 sm:gap-3 max-w-[88%] sm:max-w-[85%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
+              >
                 {msg.role === "aila" && (
-                  <div className="w-8 h-8 shrink-0 rounded-full bg-indigo-50 border border-indigo-100 shadow-sm flex items-center justify-center overflow-hidden">
-                     <img src="/aila-relax.png" className="w-6 h-6 object-cover mt-2" alt="Aila" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-full bg-indigo-50 border border-indigo-100 shadow-sm flex items-center justify-center overflow-hidden">
+                    <img
+                      src="/aila-relax.png"
+                      className="w-5 h-5 sm:w-6 sm:h-6 object-cover mt-2"
+                      alt="Aila"
+                    />
                   </div>
                 )}
-                
+
                 <div
-                  className={`p-4 text-[14px] font-bold leading-relaxed shadow-sm transition-all ${
+                  className={`p-3 sm:p-4 text-[13px] sm:text-[14px] font-bold leading-relaxed shadow-sm transition-all ${
                     msg.role === "user"
                       ? "bg-[#0d1f5c] text-white rounded-[20px] rounded-tr-sm shadow-indigo-900/10"
                       : "bg-[#f8f9ff] text-[#0d1f5c] border border-indigo-50 rounded-[20px] rounded-tl-sm"
@@ -328,14 +338,24 @@ export default function ActiveJourney() {
 
           {loadingAila && (
             <div className="flex justify-start w-full">
-               <div className="flex gap-3 max-w-[85%]">
-                <div className="w-8 h-8 shrink-0 rounded-full bg-indigo-50 border border-indigo-100 shadow-sm flex items-center justify-center overflow-hidden">
-                     <img src="/aila-thinking.png" className="w-6 h-6 object-cover mt-2" alt="Aila" />
+              <div className="flex gap-2 sm:gap-3 max-w-[85%]">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-full bg-indigo-50 border border-indigo-100 shadow-sm flex items-center justify-center overflow-hidden">
+                  <img
+                    src="/aila-thinking.png"
+                    className="w-5 h-5 sm:w-6 sm:h-6 object-cover mt-2"
+                    alt="Aila"
+                  />
                 </div>
-                <div className="bg-[#f8f9ff] px-5 py-4 rounded-[20px] rounded-tl-sm border border-indigo-50 shadow-sm flex gap-1.5 items-center">
+                <div className="bg-[#f8f9ff] px-4 sm:px-5 py-3 sm:py-4 rounded-[20px] rounded-tl-sm border border-indigo-50 shadow-sm flex gap-1.5 items-center">
                   <div className="w-2 h-2 bg-indigo-400/60 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-indigo-400/80 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></div>
-                  <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
+                  <div
+                    className="w-2 h-2 bg-indigo-400/80 rounded-full animate-bounce"
+                    style={{ animationDelay: "150ms" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"
+                    style={{ animationDelay: "300ms" }}
+                  ></div>
                 </div>
               </div>
             </div>
@@ -345,7 +365,7 @@ export default function ActiveJourney() {
 
         <form
           onSubmit={handleSendMessage}
-          className="p-5 bg-white border-t border-indigo-50 shrink-0 shadow-[0_-10px_40px_rgba(13,31,92,0.03)]"
+          className="p-4 sm:p-5 bg-white border-t border-indigo-50 shrink-0 shadow-[0_-10px_40px_rgba(13,31,92,0.03)]"
         >
           <div className="relative flex items-center group">
             <input
@@ -353,51 +373,54 @@ export default function ActiveJourney() {
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               placeholder="Ask Aila for directions, tips..."
-              className="w-full pl-5 pr-16 py-4 bg-[#f8f9ff] border border-indigo-100 rounded-2xl text-[14px] font-bold focus:bg-white focus:ring-4 focus:ring-indigo-50 focus:border-indigo-400 transition-all outline-none text-[#0d1f5c] placeholder:text-slate-400 shadow-inner"
+              className="w-full pl-4 sm:pl-5 pr-14 sm:pr-16 py-3.5 sm:py-4 bg-[#f8f9ff] border border-indigo-100 rounded-2xl text-[13px] sm:text-[14px] font-bold focus:bg-white focus:ring-4 focus:ring-indigo-50 focus:border-indigo-400 transition-all outline-none text-[#0d1f5c] placeholder:text-slate-400 shadow-inner"
             />
             <button
               type="submit"
               disabled={!chatInput.trim()}
-              className="absolute right-2.5 w-10 h-10 bg-indigo-600 text-white rounded-xl shadow-md shadow-indigo-600/20 disabled:opacity-40 hover:bg-indigo-700 transition-all active:scale-90 flex items-center justify-center group-focus-within:bg-[#0d1f5c]"
+              className="absolute right-2.5 w-9 h-9 sm:w-10 sm:h-10 bg-indigo-600 text-white rounded-xl shadow-md shadow-indigo-600/20 disabled:opacity-40 hover:bg-indigo-700 transition-all active:scale-90 flex items-center justify-center group-focus-within:bg-[#0d1f5c]"
             >
-              <Send size={18} className="ml-0.5" />
+              <Send size={16} className="ml-0.5" />
             </button>
           </div>
         </form>
       </div>
 
-      <div className="flex-1 relative z-0 h-[35vh] md:h-full">
-        <div className="absolute top-6 left-6 right-6 z-[400] flex justify-between items-start pointer-events-none">
+      <div className="flex-1 relative z-0 h-[45vh] md:h-full">
+        <div className="absolute top-4 sm:top-6 left-4 sm:left-6 right-4 sm:right-6 z-[400] flex justify-between items-start pointer-events-none">
           <button
             onClick={() => navigate("/dashboard")}
-            className="w-12 h-12 bg-white/95 backdrop-blur-md border border-slate-200/80 text-slate-600 rounded-2xl flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:text-[#0d1f5c] hover:border-indigo-200 pointer-events-auto transition-all active:scale-90"
+            className="w-11 h-11 sm:w-12 sm:h-12 bg-white/95 backdrop-blur-md border border-slate-200/80 text-slate-600 rounded-2xl flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:text-[#0d1f5c] hover:border-indigo-200 pointer-events-auto transition-all active:scale-90"
           >
-            <ArrowLeft size={22} />
+            <ArrowLeft size={20} />
           </button>
-          
-          <div className="flex flex-col items-end gap-3 pointer-events-auto">
-            <div className="bg-white/95 backdrop-blur-md px-5 py-3 border border-slate-200/80 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center gap-3">
+
+          <div className="flex flex-col items-end gap-2 sm:gap-3 pointer-events-auto">
+            <div className="bg-white/95 backdrop-blur-md px-3 sm:px-5 py-2 sm:py-3 border border-slate-200/80 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center gap-2 sm:gap-3">
               <div className="relative flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
               </div>
-              <span className="text-[12px] font-black tracking-widest text-[#0d1f5c] uppercase">
-                Trip #{tripId ? String(tripId).slice(-4) : 'ACTIVE'}
+              <span className="text-[11px] sm:text-[12px] font-black tracking-widest text-[#0d1f5c] uppercase">
+                Trip #{tripId ? String(tripId).slice(-4) : "ACTIVE"}
               </span>
             </div>
-            
+
             <button
               onClick={() => setIsLiveGPS(!isLiveGPS)}
-              className={`px-5 py-3 rounded-2xl text-[12px] font-black uppercase tracking-widest shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center gap-2.5 transition-all border backdrop-blur-md ${
-                isLiveGPS 
-                  ? "bg-indigo-50/95 border-indigo-200 text-indigo-700" 
+              className={`px-3 sm:px-5 py-2 sm:py-3 rounded-2xl text-[11px] sm:text-[12px] font-black uppercase tracking-widest shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center gap-2 transition-all border backdrop-blur-md ${
+                isLiveGPS
+                  ? "bg-indigo-50/95 border-indigo-200 text-indigo-700"
                   : "bg-white/95 border-slate-200/80 text-slate-500 hover:bg-slate-50"
               }`}
             >
               {isLiveGPS ? (
-                <Crosshair size={16} className="animate-spin-slow text-indigo-500" />
+                <Crosshair
+                  size={14}
+                  className="animate-spin-slow text-indigo-500"
+                />
               ) : (
-                <PauseCircle size={16} />
+                <PauseCircle size={14} />
               )}
               {isLiveGPS ? "Tracking Live" : "GPS Paused"}
             </button>
@@ -407,7 +430,7 @@ export default function ActiveJourney() {
         <MapContainer
           center={[14.5995, 120.9842]}
           zoom={14}
-          style={{ height: "100%", width: "100%", backgroundColor: '#f8fafc' }}
+          style={{ height: "100%", width: "100%", backgroundColor: "#f8fafc" }}
           zoomControl={false}
         >
           <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
@@ -419,20 +442,20 @@ export default function ActiveJourney() {
           )}
 
           {decodedLegs.map((leg: any, i: number) => {
-            const isPassedOrCurrent = i <= currentStepIdx;
+            const isPast = i < currentStepIdx;
+            const isCurrent = i === currentStepIdx;
             const isFuture = i > currentStepIdx;
-            const isActiveStep = i === currentStepIdx;
 
             return (
               <Polyline
                 key={`${i}-${currentStepIdx}`}
                 positions={leg.path}
                 pathOptions={{
-                  color: isActiveStep ? "#4f46e5" : isPassedOrCurrent ? "#818cf8" : "#cbd5e1",
-                  weight: isActiveStep ? 8 : 5,
+                  color: isCurrent ? "#4f46e5" : isPast ? "#0d1f5c" : "#cbd5e1",
+                  weight: isCurrent ? 8 : 5,
                   dashArray: isFuture ? "10, 12" : undefined,
                   lineCap: "round",
-                  lineJoin: "round"
+                  lineJoin: "round",
                 }}
               />
             );
@@ -448,61 +471,73 @@ export default function ActiveJourney() {
       </div>
 
       <div className="w-full md:w-[400px] lg:w-[440px] bg-white border-l border-indigo-50 flex flex-col z-20 shadow-2xl shrink-0 h-[45vh] md:h-full">
-        <header className="px-7 py-6 border-b border-indigo-50 shrink-0 bg-white z-10">
+        <header className="px-5 sm:px-7 py-4 sm:py-6 border-b border-indigo-50 shrink-0 bg-white z-10">
           <div className="flex justify-between items-end">
             <div>
               <h2
                 style={{ fontFamily: '"Sora", sans-serif' }}
-                className="font-extrabold text-[#0d1f5c] text-2xl tracking-tight"
+                className="font-extrabold text-[#0d1f5c] text-xl sm:text-2xl tracking-tight"
               >
                 Route Details
               </h2>
-              <div className="flex items-center gap-2 mt-2">
-                 <Navigation size={14} className="text-indigo-500" />
-                 <p className="text-[13px] text-slate-500 font-bold">
+              <div className="flex items-center gap-2 mt-1.5 sm:mt-2">
+                <Navigation size={13} className="text-indigo-500" />
+                <p className="text-[12px] sm:text-[13px] text-slate-500 font-bold">
                   {decodedLegs.length - currentStepIdx} steps remaining
-                 </p>
+                </p>
               </div>
             </div>
-            
-            <div className="w-12 h-12 rounded-full border-4 border-slate-100 flex items-center justify-center relative">
-               <svg className="absolute inset-0 w-full h-full -rotate-90">
-                 <circle cx="20" cy="20" r="20" fill="none" stroke="#4f46e5" strokeWidth="4" 
-                    strokeDasharray="125" 
-                    strokeDashoffset={125 - (125 * (currentStepIdx / Math.max(1, decodedLegs.length - 1)))} 
-                    className="transition-all duration-1000 ease-out" />
-               </svg>
-               <span className="text-[10px] font-black text-[#0d1f5c]">
-                 {Math.round((currentStepIdx / Math.max(1, decodedLegs.length - 1)) * 100)}%
-               </span>
+
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border-4 border-slate-100 flex items-center justify-center relative shrink-0">
+              <svg className="absolute inset-0 w-full h-full -rotate-90">
+                <circle
+                  cx="22"
+                  cy="22"
+                  r="20"
+                  fill="none"
+                  stroke="#4f46e5"
+                  strokeWidth="4"
+                  strokeDasharray="125"
+                  strokeDashoffset={
+                    125 -
+                    125 * (currentStepIdx / Math.max(1, decodedLegs.length - 1))
+                  }
+                  className="transition-all duration-1000 ease-out"
+                />
+              </svg>
+              <span className="text-[10px] font-black text-[#0d1f5c]">
+                {Math.round(
+                  (currentStepIdx / Math.max(1, decodedLegs.length - 1)) * 100,
+                )}
+                %
+              </span>
             </div>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-7 bg-white relative no-scrollbar">
-          <div className="absolute left-[45px] top-8 bottom-12 w-[2px] bg-slate-100 z-0"></div>
-          
-          <div 
-             className="absolute left-[45px] top-8 w-[2px] bg-indigo-500 z-0 transition-all duration-700"
-             style={{ height: `${Math.min(100, (currentStepIdx / Math.max(1, decodedLegs.length - 1)) * 100)}%` }}
-          ></div>
-
-          <div className="space-y-6 relative z-10 pb-10">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-7 bg-white relative no-scrollbar">
+          <div className="flex flex-col">
             {decodedLegs.map((leg: any, idx: number) => {
               const isPast = idx < currentStepIdx;
               const isCurrent = idx === currentStepIdx;
 
-              const distStr = leg.distance_text || (leg.distance_km ? `${leg.distance_km} km` : null);
-              const durStr = leg.duration_text || (leg.duration_mins ? `${Math.round(leg.duration_mins)} mins` : null);
+              const distStr =
+                leg.distance_text ||
+                (leg.distance_km ? `${leg.distance_km} km` : null);
+              const durStr =
+                leg.duration_text ||
+                (leg.duration_mins
+                  ? `${Math.round(leg.duration_mins)} mins`
+                  : null);
 
               return (
                 <div
                   key={idx}
-                  className={`flex gap-5 transition-all duration-300 ${isPast ? "opacity-60" : "opacity-100"}`}
+                  className={`flex gap-4 sm:gap-5 transition-all duration-300 ${isPast ? "opacity-60" : "opacity-100"}`}
                 >
-                  <div className="shrink-0 flex flex-col items-center pt-1.5 relative">
+                  <div className="shrink-0 flex flex-col items-center w-8 sm:w-9">
                     <div
-                      className={`w-9 h-9 rounded-full border-2 flex items-center justify-center relative z-10 transition-colors duration-300 ${
+                      className={`w-8 h-8 sm:w-9 sm:h-9 shrink-0 rounded-full border-2 flex items-center justify-center relative z-10 transition-colors duration-300 ${
                         isCurrent
                           ? "bg-[#0d1f5c] border-[#0d1f5c] text-white shadow-md"
                           : isPast
@@ -511,86 +546,101 @@ export default function ActiveJourney() {
                       }`}
                     >
                       {leg.type === "WALKING" ? (
-                        <Footprints size={16} />
+                        <Footprints size={14} />
                       ) : leg.type === "TRANSIT" ? (
-                        <Train size={16} />
+                        <Train size={14} />
                       ) : (
-                        <Car size={16} />
+                        <Car size={14} />
                       )}
                     </div>
+                    <div
+                      className={`w-[2px] flex-1 my-1 transition-colors duration-300 ${isPast ? "bg-indigo-500" : "bg-slate-100"}`}
+                    ></div>
                   </div>
-                  
-                  <div
-                    className={`flex-1 p-4 rounded-2xl transition-all duration-300 ${
-                      isCurrent 
-                        ? "bg-[#f8f9ff] border border-indigo-100 shadow-sm" 
-                        : isPast
-                          ? "bg-transparent border border-transparent"
-                          : "bg-white border border-slate-100"
-                    }`}
-                  >
-                    {isCurrent && (
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-100 px-2 py-1 rounded-md">
-                          Current Step
-                        </span>
-                      </div>
-                    )}
-                    
-                    <p
-                      className={`text-[14px] font-bold leading-relaxed ${isCurrent ? "text-[#0d1f5c]" : "text-slate-600"}`}
-                      dangerouslySetInnerHTML={{ __html: leg.instructions || 'Proceed to route' }}
-                    />
 
-                    <div className="flex items-center gap-4 mt-3 flex-wrap">
-                      {distStr && (
-                         <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-slate-500 tracking-wide">
-                           <MapPin size={12} className="text-indigo-400" /> {distStr}
-                         </div>
-                      )}
-                      {durStr && (
-                         <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-slate-500 tracking-wide">
-                           <Clock size={12} className="text-indigo-400" /> {durStr}
-                         </div>
-                      )}
-                      {leg.estimated_fare > 0 && (
-                        <div className="inline-block px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[11px] font-black rounded border border-indigo-100 shadow-sm">
-                          ₱{leg.estimated_fare.toFixed(2)}
+                  <div className="flex-1 pb-5 sm:pb-6 min-w-0">
+                    <div
+                      className={`p-3 sm:p-4 rounded-2xl ${
+                        isCurrent
+                          ? "bg-[#f8f9ff] border border-indigo-100 shadow-sm"
+                          : isPast
+                            ? "bg-transparent border border-transparent"
+                            : "bg-white border border-slate-100"
+                      }`}
+                    >
+                      {isCurrent && (
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-100 px-2 py-1 rounded-md">
+                            Current Step
+                          </span>
                         </div>
                       )}
+
+                      <p
+                        className={`text-[13px] sm:text-[14px] font-bold leading-relaxed ${isCurrent ? "text-[#0d1f5c]" : "text-slate-600"}`}
+                        dangerouslySetInnerHTML={{
+                          __html: leg.instructions || "Proceed to route",
+                        }}
+                      />
+
+                      <div className="flex items-center gap-3 sm:gap-4 mt-2 sm:mt-3 flex-wrap">
+                        {distStr && (
+                          <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-slate-500 tracking-wide">
+                            <MapPin size={12} className="text-indigo-400" />{" "}
+                            {distStr}
+                          </div>
+                        )}
+                        {durStr && (
+                          <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-slate-500 tracking-wide">
+                            <Clock size={12} className="text-indigo-400" />{" "}
+                            {durStr}
+                          </div>
+                        )}
+                        {leg.estimated_fare > 0 && (
+                          <div className="inline-block px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[11px] font-black rounded border border-indigo-100 shadow-sm">
+                            ₱{leg.estimated_fare.toFixed(2)}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               );
             })}
 
-            <div className="flex gap-5 pt-2 opacity-80">
-                <div className="shrink-0 flex flex-col items-center relative pl-1.5">
-                   <div className="w-6 h-6 rounded-full bg-[#0d1f5c] border-[3px] border-white shadow-sm z-10 flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-                   </div>
+            <div className="flex gap-4 sm:gap-5 opacity-80">
+              <div className="shrink-0 flex flex-col items-center w-8 sm:w-9">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center relative z-10">
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#0d1f5c] border-[3px] border-white shadow-sm flex items-center justify-center">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                  </div>
                 </div>
-                <div className="flex-1 pt-0.5">
-                   <p className="text-[14px] font-extrabold text-[#0d1f5c]">Destination Reached</p>
-                </div>
+              </div>
+              <div className="flex-1 py-1.5">
+                <p className="text-[13px] sm:text-[14px] font-extrabold text-[#0d1f5c]">
+                  Destination Reached
+                </p>
+              </div>
             </div>
-
           </div>
         </div>
 
-        <div className="p-6 bg-white border-t border-indigo-50 shrink-0 space-y-3 z-20">
+        <div className="p-4 sm:p-6 bg-white border-t border-indigo-50 shrink-0 space-y-2 sm:space-y-3 z-20">
           {currentStepIdx < decodedLegs.length - 1 ? (
             <button
-              onClick={handleNextStepDemo} 
-              className="w-full py-4.5 bg-[#f8f9ff] hover:bg-indigo-50 border border-indigo-100 text-[#0d1f5c] font-extrabold text-[14px] rounded-2xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+              onClick={handleNextStepDemo}
+              className="w-full py-4 bg-[#f8f9ff] hover:bg-indigo-50 border border-indigo-100 text-[#0d1f5c] font-extrabold text-[13px] sm:text-[14px] rounded-2xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
             >
-              Next Step <span className="text-indigo-400 text-[11px] uppercase tracking-wider font-black">(Demo)</span>
+              Next Step{" "}
+              <span className="text-indigo-400 text-[11px] uppercase tracking-wider font-black">
+                (Demo)
+              </span>
             </button>
           ) : (
             <button
               onClick={() => handleUpdateStatus("finished")}
               disabled={isUpdatingStatus}
-              className="w-full py-4.5 bg-[#0d1f5c] hover:bg-indigo-900 text-white font-extrabold text-[14px] rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-900/20 active:scale-[0.98] transition-all"
+              className="w-full py-4 bg-[#0d1f5c] hover:bg-indigo-900 text-white font-extrabold text-[13px] sm:text-[14px] rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-900/20 active:scale-[0.98] transition-all"
             >
               {isUpdatingStatus ? (
                 <Loader2 className="animate-spin" size={20} />
@@ -604,7 +654,7 @@ export default function ActiveJourney() {
           <button
             onClick={() => handleUpdateStatus("cancelled")}
             disabled={isUpdatingStatus}
-            className="w-full py-3.5 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 font-extrabold text-[13px] rounded-2xl flex items-center justify-center gap-2 border border-slate-200 hover:border-rose-200 transition-all active:scale-[0.98]"
+            className="w-full py-3 sm:py-3.5 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 font-extrabold text-[12px] sm:text-[13px] rounded-2xl flex items-center justify-center gap-2 border border-slate-200 hover:border-rose-200 transition-all active:scale-[0.98]"
           >
             <XCircle size={16} /> Cancel Trip
           </button>
@@ -612,8 +662,8 @@ export default function ActiveJourney() {
       </div>
 
       <style>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; } 
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } 
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .custom-pin { overflow: visible !important; }
       `}</style>
     </div>
