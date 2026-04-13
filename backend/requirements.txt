@@ -7,3 +7,4 @@ pyjwt
 passlib[bcrypt]
 python-dotenv
 requests
+google-genai
