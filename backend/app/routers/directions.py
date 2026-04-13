@@ -45,7 +45,9 @@ def get_routes(
             step_data = {
                 "type": travel_mode,
                 "distance_km": round(step_dist_km, 2),
+                "distance_text": step.get("distance", {}).get("text", ""),
                 "duration_mins": round(step.get("duration", {}).get("value", 0) / 60, 2),
+                "duration_text": step.get("duration", {}).get("text", ""),
                 "instructions": step.get("html_instructions", ""),
                 "geometry": step.get("polyline", {}).get("points", "")
             }
