@@ -7,7 +7,6 @@ import {
   LocateFixed,
   Car,
   Bus,
-  UserSquare2,
   Loader2,
   Search,
   Navigation,

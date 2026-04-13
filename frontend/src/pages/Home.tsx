@@ -5,9 +5,7 @@ import {
   Clock,
   Map,
   LayoutDashboard,
-  ArrowRight,
   ChevronRight,
-  Heart,
   Car,
   Bus,
   Route,
@@ -525,7 +523,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
-            {HOW_STEPS.map((step, i) => (
+            {HOW_STEPS.map((step) => (
               <div
                 key={step.num}
                 className="relative bg-white rounded-[2rem] p-6 sm:p-8 border border-indigo-50 shadow-sm hover:shadow-[0_8px_30px_rgba(99,102,241,0.08)] transition-all"

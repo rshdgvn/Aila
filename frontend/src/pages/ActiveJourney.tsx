@@ -150,6 +150,7 @@ export default function ActiveJourney() {
       (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
       (err) => {
         setIsLiveGPS(false);
+        console.error("Error getting location:", err);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );

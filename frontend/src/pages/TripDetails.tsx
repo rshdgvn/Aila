@@ -45,9 +45,8 @@ export default function TripDetails() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { id } = useParams();
 
-  const [trip, setTrip] = useState<Trip | null>(location.state?.trip || null);
+  const [trip] = useState<Trip | null>(location.state?.trip || null);
 
   useEffect(() => {
     if (!document.getElementById("raleway-sora-font")) {
