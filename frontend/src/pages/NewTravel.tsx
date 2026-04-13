@@ -290,7 +290,7 @@ export default function NewTravel() {
 
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="px-6 pt-5 pb-2 shrink-0 flex items-end gap-1">
-            <div className="w-36 h-36 md:w-44 md:h-44 shrink-0 relative flex items-end">
+            <div className="w-32 h-32 md:w-36 md:h-36 mt-2 shrink-0 relative flex items-end">
               <img
                 src={ailaMascot}
                 alt="Aila"

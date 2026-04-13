@@ -141,26 +141,32 @@ export default function Dashboard() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 bg-gradient-to-br from-[#0d1f5c] to-indigo-900 rounded-[2rem] p-8 md:p-10 relative overflow-hidden flex items-center shadow-2xl shadow-indigo-900/15 border border-indigo-500/20 min-h-[280px]">
-                <div className="absolute -top-32 -right-20 w-80 h-80 bg-indigo-500 blur-[80px] opacity-40 rounded-full mix-blend-screen pointer-events-none"></div>
-                <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-500 blur-[80px] opacity-30 rounded-full mix-blend-screen pointer-events-none"></div>
+              {/* Aila's Message Section */}
+              <div className="lg:col-span-2 bg-white rounded-[2rem] p-6 md:p-8 border border-indigo-50 shadow-xl shadow-indigo-100/40 flex items-center gap-4 md:gap-8 min-h-[160px]">
+                {/* Mascot - No longer in a circle, bigger, and centered vertically */}
+                <div className="w-24 h-24 md:w-36 md:h-36 shrink-0 relative flex items-center justify-center">
+                  <img
+                    src="/aila-relax.png"
+                    alt="Aila Mascot"
+                    className="w-full h-full object-contain drop-shadow-[0_10px_20px_rgba(13,31,92,0.15)] scale-[1.15]"
+                  />
+                </div>
 
-                <div className="relative z-10 flex flex-col-reverse md:flex-row gap-8 items-center w-full justify-between h-full">
-                  <div className="flex-1 text-white z-10">
+                {/* Message Bubble - Right side */}
+                <div className="flex-1">
+                  <div className="inline-flex items-center gap-2 mb-2 ml-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+                      Aila's Message
+                    </span>
+                  </div>
+                  <div className="bg-[#f8f9ff] border border-indigo-50 rounded-[20px] rounded-tl-sm p-4 md:p-5 shadow-sm">
                     <p
                       style={{ fontFamily: '"Sora", sans-serif' }}
-                      className="text-xl md:text-3xl font-bold leading-snug mb-6 text-white/95 drop-shadow-md"
+                      className="text-[14px] md:text-[15px] font-bold text-[#0d1f5c] leading-relaxed"
                     >
-                      "{getOverviewText()}"
+                      {getOverviewText()}
                     </p>
-                  </div>
-
-                  <div className="w-64 h-64 md:w-80 md:h-80 shrink-0 relative z-20 flex items-end justify-center -mr-4 md:-mr-8">
-                    <img
-                      src="/aila-relax.png"
-                      alt="Aila"
-                      className="w-full h-full object-contain origin-bottom scale-[1.7] md:scale-[1.8]"
-                    />
                   </div>
                 </div>
               </div>
