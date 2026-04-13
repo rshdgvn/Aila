@@ -8,16 +8,13 @@ import {
   Navigation2,
   MapPin,
   Calendar,
-  Play,
   LayoutDashboard,
   Compass,
   Settings,
-  TrendingUp,
   Route,
   Map as MapIcon,
   ChevronRight,
   Activity,
-  Sparkles,
   Car,
   Bus,
   Menu,
@@ -78,20 +75,18 @@ export default function Dashboard() {
   );
   const totalTrips = trips.length;
 
-  const getInsightText = () => {
+  const getOverviewText = () => {
     if (totalTrips === 0)
       return "Welcome aboard! Let's map out something exciting today.";
     if (totalDistance > 100)
       return `You've covered a massive ${totalDistance.toFixed(1)}km so far! Your travel history is highly active.`;
     if (trips.length > 0 && trips[0].status === "active")
-      return "You have an ongoing journey! Tap play to return to navigation.";
-    return `You have ${totalTrips} journeys logged safely in your vault. Ready for a new route?`;
+      return "You have an ongoing trip! Tap play to return to navigation.";
+    return `You have ${totalTrips} trips logged safely in your vault. Ready for a new route?`;
   };
 
-  // 🔥 THE FORMATTER: Extracts only the most important specific place name
   const formatLocationName = (address: string) => {
     if (!address) return "Unknown";
-    // Splits by comma and takes only the first part (e.g., "Ayala Center, Makati, PH" -> "Ayala Center")
     return address.split(",")[0].trim();
   };
 
@@ -100,7 +95,6 @@ export default function Dashboard() {
       className="h-screen w-full bg-[#f4f7ff] flex overflow-hidden text-[#0d1f5c]"
       style={{ fontFamily: '"Raleway", sans-serif' }}
     >
-      {/* ── MOBILE SIDEBAR OVERLAY ── */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-[#0d1f5c]/40 backdrop-blur-sm z-40 md:hidden"
@@ -108,7 +102,6 @@ export default function Dashboard() {
         />
       )}
 
-      {/* ── SIDEBAR ── */}
       <div
         className={`fixed inset-y-0 left-0 z-50 w-[280px] bg-white border-r border-indigo-100/50 flex flex-col p-6 shadow-2xl transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:shadow-none ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
@@ -141,16 +134,8 @@ export default function Dashboard() {
           <nav className="space-y-2">
             <button className="group flex items-center justify-between px-4 py-3.5 bg-[#0d1f5c] text-white rounded-2xl font-bold w-full shadow-lg shadow-indigo-900/20">
               <div className="flex items-center gap-3">
-                <LayoutDashboard size={18} className="text-indigo-300" />{" "}
+                <LayoutDashboard size={18} className="text-indigo-300" />
                 Dashboard
-              </div>
-            </button>
-            <button
-              onClick={() => navigate("/analytics")}
-              className="group flex items-center justify-between px-4 py-3.5 hover:bg-indigo-50/80 text-slate-500 hover:text-[#0d1f5c] rounded-2xl font-bold w-full transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <TrendingUp size={18} /> Travel Analytics
               </div>
             </button>
             <button
@@ -166,7 +151,7 @@ export default function Dashboard() {
               className="group flex items-center justify-between px-4 py-3.5 hover:bg-indigo-50/80 text-slate-500 hover:text-[#0d1f5c] rounded-2xl font-bold w-full transition-colors"
             >
               <div className="flex items-center gap-3">
-                <Settings size={18} /> Settings
+                <Settings size={18} /> Profile
               </div>
             </button>
           </nav>
@@ -198,7 +183,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── MAIN CONTENT ── */}
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         <div className="md:hidden flex items-center justify-between bg-white/80 backdrop-blur-md px-6 py-4 border-b border-indigo-100 z-30 sticky top-0">
           <span
@@ -237,38 +221,31 @@ export default function Dashboard() {
                 <Plus
                   size={20}
                   className="group-hover:rotate-90 transition-transform duration-300"
-                />{" "}
-                Map New Journey
+                />
+                Map New Trip
               </button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 bg-gradient-to-br from-[#0d1f5c] to-indigo-900 rounded-[2rem] p-8 md:p-10 relative overflow-hidden flex items-center shadow-2xl shadow-indigo-900/15 border border-indigo-500/20">
+              <div className="lg:col-span-2 bg-gradient-to-br from-[#0d1f5c] to-indigo-900 rounded-[2rem] p-8 md:p-10 relative overflow-hidden flex items-center shadow-2xl shadow-indigo-900/15 border border-indigo-500/20 min-h-[280px]">
                 <div className="absolute -top-32 -right-20 w-80 h-80 bg-indigo-500 blur-[80px] opacity-40 rounded-full mix-blend-screen pointer-events-none"></div>
                 <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-500 blur-[80px] opacity-30 rounded-full mix-blend-screen pointer-events-none"></div>
 
-                <div className="relative z-10 flex flex-col-reverse md:flex-row gap-8 items-center w-full justify-between">
+                <div className="relative z-10 flex flex-col-reverse md:flex-row gap-8 items-center w-full justify-between h-full">
                   <div className="flex-1 text-white z-10">
-                    <div className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/10">
-                      <Sparkles size={14} className="text-indigo-300" />
-                      <span className="text-[10px] font-extrabold text-indigo-100 uppercase tracking-widest">
-                        Aila's Insight
-                      </span>
-                    </div>
                     <p
                       style={{ fontFamily: '"Sora", sans-serif' }}
-                      className="text-xl md:text-2xl font-bold leading-snug mb-6 text-white/95 drop-shadow-md"
+                      className="text-xl md:text-3xl font-bold leading-snug mb-6 text-white/95 drop-shadow-md"
                     >
-                      "{getInsightText()}"
+                      "{getOverviewText()}"
                     </p>
                   </div>
 
-                  <div className="w-40 h-40 md:w-56 md:h-56 shrink-0 relative z-20 flex items-center justify-center">
+                  <div className="w-64 h-64 md:w-80 md:h-80 shrink-0 relative z-20 flex items-end justify-center -mr-4 md:-mr-8">
                     <img
                       src="/aila-relax.png"
                       alt="Aila"
-                      className="w-full h-full object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.4)] scale-[1.15] md:scale-[1.25] origin-bottom"
-                      style={{ animation: "birdFloat 4s ease-in-out infinite" }}
+                      className="w-full h-full object-contain origin-bottom scale-[1.7] md:scale-[1.8]"
                     />
                   </div>
                 </div>
@@ -297,7 +274,7 @@ export default function Dashboard() {
                 <div className="flex justify-between items-center bg-gradient-to-br from-[#f8f9ff] to-[#f0f4ff] p-5 rounded-[1.5rem] border border-indigo-100/50 hover:border-indigo-200 transition-colors">
                   <div>
                     <p className="text-[10px] font-extrabold text-emerald-400 uppercase tracking-widest mb-1">
-                      Journeys Logged
+                      Trips Logged
                     </p>
                     <p
                       style={{ fontFamily: '"Sora", sans-serif' }}
@@ -322,7 +299,7 @@ export default function Dashboard() {
                   <div className="p-2 bg-indigo-50 rounded-lg text-indigo-500">
                     <Activity size={20} />
                   </div>
-                  Recent History
+                  Trip History
                 </h3>
               </div>
 
@@ -331,7 +308,7 @@ export default function Dashboard() {
                   <div className="h-full flex flex-col items-center justify-center text-center opacity-60">
                     <MapIcon size={48} className="text-indigo-200 mb-4" />
                     <p className="text-base font-bold text-[#0d1f5c]">
-                      No routes yet. Map your first adventure!
+                      No routes yet. Map your first Trip!
                     </p>
                   </div>
                 ) : (
@@ -358,7 +335,6 @@ export default function Dashboard() {
                             ).toLocaleDateString()}
                           </p>
                           <div className="flex items-center gap-2 text-base font-bold text-[#0d1f5c] truncate">
-                            {/* 🔥 USING THE SHORT FORMATTER HERE TOO */}
                             <span className="truncate max-w-[120px] sm:max-w-[180px]">
                               {formatLocationName(trip.origin)}
                             </span>
@@ -378,8 +354,8 @@ export default function Dashboard() {
                             style={{ fontFamily: '"Sora", sans-serif' }}
                             className="text-base font-black text-[#0d1f5c]"
                           >
-                            {trip.distance_km}{" "}
-                            <span className="text-[10px] text-slate-400 font-bold">
+                            {trip.distance_km}
+                            <span className="text-[10px] text-slate-400 font-bold ml-1">
                               km
                             </span>
                           </p>
@@ -387,8 +363,8 @@ export default function Dashboard() {
                             style={{ fontFamily: '"Sora", sans-serif' }}
                             className="text-base font-black text-[#0d1f5c]"
                           >
-                            {trip.duration_mins}{" "}
-                            <span className="text-[10px] text-slate-400 font-bold">
+                            {trip.duration_mins}
+                            <span className="text-[10px] text-slate-400 font-bold ml-1">
                               min
                             </span>
                           </p>
@@ -403,12 +379,9 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── 🔥 STRAVA-STYLE INSTAGRAM STORY MODAL 🔥 ── */}
       {selectedTrip && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0d1f5c]/95 backdrop-blur-xl p-4 transition-opacity duration-300">
-          {/* Main Card (Dark Mode, Map Vibe) */}
           <div className="relative w-full max-w-[360px] h-[640px] bg-[#0a0f1c] rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.8)] flex flex-col p-6 text-white border-[4px] border-[#1e293b] transform scale-100 animate-in zoom-in-95 duration-200">
-            {/* Close Btn */}
             <button
               onClick={() => setSelectedTrip(null)}
               className="absolute top-5 right-5 p-2 bg-white/10 backdrop-blur-md rounded-full hover:bg-white/20 transition-colors z-30"
@@ -416,7 +389,6 @@ export default function Dashboard() {
               <X size={20} />
             </button>
 
-            {/* Background Map Grid */}
             <div
               className="absolute inset-0 z-0 opacity-20"
               style={{
@@ -426,14 +398,12 @@ export default function Dashboard() {
               }}
             ></div>
 
-            {/* 🗺️ Glowing GPS Route Map Line Overlay */}
             <svg
               className="absolute inset-0 w-full h-full z-10 pointer-events-none"
               viewBox="0 0 360 640"
               fill="none"
               preserveAspectRatio="xMidYMid slice"
             >
-              {/* The main route track */}
               <path
                 d="M 80,500 Q 140,400 110,300 T 260,160"
                 stroke="url(#route-gradient)"
@@ -442,7 +412,6 @@ export default function Dashboard() {
                 strokeLinejoin="round"
                 className="drop-shadow-[0_0_15px_rgba(99,102,241,0.8)]"
               />
-              {/* Dashed line effect */}
               <path
                 d="M 80,500 Q 140,400 110,300 T 260,160"
                 stroke="white"
@@ -461,13 +430,12 @@ export default function Dashboard() {
                   y2="160"
                   gradientUnits="userSpaceOnUse"
                 >
-                  <stop stopColor="#f43f5e" /> {/* Rose */}
-                  <stop offset="1" stopColor="#818cf8" /> {/* Indigo */}
+                  <stop stopColor="#f43f5e" />
+                  <stop offset="1" stopColor="#818cf8" />
                 </linearGradient>
               </defs>
             </svg>
 
-            {/* Map Pins overlaying the SVG path */}
             <div className="absolute top-[140px] right-[40px] max-w-[140px] text-right z-20">
               <p
                 style={{ fontFamily: '"Sora", sans-serif' }}
@@ -487,9 +455,7 @@ export default function Dashboard() {
               </p>
             </div>
 
-            {/* UI Elements */}
             <div className="relative z-30 flex flex-col h-full pointer-events-none">
-              {/* Top Brand */}
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.2)]">
@@ -511,9 +477,7 @@ export default function Dashboard() {
                 </span>
               </div>
 
-              {/* Bottom Stats (Strava Vibe) */}
               <div className="mt-auto bg-gradient-to-t from-[#0a0f1c] via-[#0a0f1c]/90 to-transparent pt-12 pb-2 -mx-6 px-6">
-                {/* Huge Distance */}
                 <div className="mb-6 drop-shadow-[0_0_20px_rgba(99,102,241,0.3)]">
                   <p className="text-[11px] uppercase tracking-[0.25em] text-slate-400 font-bold mb-1">
                     Distance
@@ -529,7 +493,6 @@ export default function Dashboard() {
                   </p>
                 </div>
 
-                {/* Time & Pace Bottom Row */}
                 <div className="flex gap-10 border-t border-white/10 pt-5">
                   <div>
                     <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mb-1">
@@ -581,10 +544,6 @@ export default function Dashboard() {
       <style
         dangerouslySetInnerHTML={{
           __html: `
-        @keyframes birdFloat {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-12px) rotate(2deg); }
-        }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         

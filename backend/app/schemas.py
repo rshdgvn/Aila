@@ -12,11 +12,17 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class UserUpdate(BaseModel):
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
+    profile_picture: Optional[str] = None
+
 class UserResponse(BaseModel):
     id: int
     firstName: str
     lastName: str
     email: str
+    profile_picture: Optional[str] = None
 
 class TripCreate(BaseModel):
     origin: str
@@ -38,6 +44,19 @@ class TripResponse(TripCreate):
     created_at: datetime
     user_id: int
     status: str
+
+    class Config:
+        from_attributes = True
+
+class SavedPlaceCreate(BaseModel):
+    name: str
+    address: str
+    lat: float
+    lng: float
+
+class SavedPlaceResponse(SavedPlaceCreate):
+    id: int
+    user_id: int
 
     class Config:
         from_attributes = True

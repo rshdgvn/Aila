@@ -10,7 +10,9 @@ class User(Base):
     last_name = Column(String)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
+    profile_picture = Column(String, nullable=True)
     trips = relationship("Trip", back_populates="owner")
+    saved_places = relationship("SavedPlace", back_populates="owner")
 
 class Trip(Base):
     __tablename__ = "trips"
@@ -32,3 +34,13 @@ class Trip(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="trips")
     status = Column(String, default="ongoing")
+
+class SavedPlace(Base):
+    __tablename__ = "saved_places"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    address = Column(String)
+    lat = Column(Float)
+    lng = Column(Float)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    owner = relationship("User", back_populates="saved_places")

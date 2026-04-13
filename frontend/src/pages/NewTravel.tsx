@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import polyline from "@mapbox/polyline";
 import {
   ArrowLeft,
@@ -19,12 +19,17 @@ import RouteOptions from "../components/RouteOptions";
 
 export default function NewTravel() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navState = location.state as any;
+
   const [originStr, setOriginStr] = useState("");
-  const [destStr, setDestStr] = useState("");
+  const [destStr, setDestStr] = useState(navState?.destStr || "");
   const [originCoords, setOriginCoords] = useState<[number, number] | null>(
     null,
   );
-  const [destCoords, setDestCoords] = useState<[number, number] | null>(null);
+  const [destCoords, setDestCoords] = useState<[number, number] | null>(
+    navState?.destCoords || null,
+  );
   const [pinMode, setPinMode] = useState<"origin" | "destination" | null>(null);
   const [mode, setMode] = useState("transit");
   const [passengerType, setPassengerType] = useState("regular");
@@ -106,6 +111,10 @@ export default function NewTravel() {
       setAilaMessages([`Tap anywhere on the map to drop your ${pinMode} pin!`]);
     } else if (!originCoords && !destCoords) {
       setAilaMessages(["Kamusta! Where are we heading today?"]);
+    } else if (destCoords && !originCoords) {
+      setAilaMessages([
+        "Awesome destination! Now, where are you starting from?",
+      ]);
     } else {
       setAilaMessages(["Got it! Now, let's set your destination."]);
     }
@@ -155,6 +164,7 @@ export default function NewTravel() {
     setLoading(true);
     setRoutesData(null);
     setSelectedRouteIdx(null);
+    setSaved(false);
     try {
       const data = await routesApi.getRoutes(o, d, mode, passengerType);
 
@@ -245,7 +255,6 @@ export default function NewTravel() {
     try {
       await tripsApi.create(createTripPayload(route, "pending"));
       setSaved(true);
-      setTimeout(() => navigate("/dashboard"), 1000);
     } catch (err) {
       console.error(err);
     } finally {

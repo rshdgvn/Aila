@@ -27,6 +27,7 @@ export interface User {
   firstName: string
   lastName: string
   email: string
+  profile_picture?: string
 }
 
 export interface Trip {
@@ -47,16 +48,37 @@ export interface Trip {
   path?: [number, number][]; 
 }
 
+export interface SavedPlace {
+  id: number;
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+  user_id: number;
+}
+
 export const authApi = {
   register: (data: any) => api.post('/auth/register', data).then(r => r.data),
   login: (data: any) => api.post('/auth/login', data).then(r => r.data),
   me: () => api.get<User>('/auth/me').then(r => r.data),
 }
 
+export const usersApi = {
+  updateProfile: (data: { firstName: string, lastName: string, profile_picture: string }) => 
+    api.put<User>('/users/profile', data).then(r => r.data),
+}
+
 export const tripsApi = {
   create: (data: any) => api.post('/trips', data),
   getAll: () => api.get('/trips'),
   updateStatus: (tripId: number, status: string) => api.put(`/trips/${tripId}/status`, { status }),
+}
+
+export const placesApi = {
+  create: (data: { name: string, address: string, lat: number, lng: number }) => 
+    api.post('/places', data).then(r => r.data),
+  getAll: () => api.get('/places').then(r => r.data),
+  delete: (placeId: number) => api.delete(`/places/${placeId}`),
 }
 
 export const routesApi = {
@@ -96,3 +118,4 @@ export const ailaApi = {
     current_instruction?: string; 
   }) => api.post('/aila/chat', data),
 }
+
