@@ -19,7 +19,7 @@ export default function App() {
         <div className="relative">
           <div className="w-20 h-20 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
           <img 
-            src="/aila-body-only.png" 
+            src="/aila-waving.png" 
             alt="Loading" 
             className="w-10 h-10 absolute inset-0 m-auto animate-pulse" 
           />
