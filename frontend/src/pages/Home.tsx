@@ -577,7 +577,7 @@ export default function Home() {
               style={{ filter: "blur(28px)" }}
             />
             <img
-              src="/image_fafad6.png"
+              src="/tracker-preview.png"
               alt="Aila Journey Tracker"
               className="relative z-10 w-full rounded-[2rem] shadow-2xl border-4 border-white object-cover"
             />

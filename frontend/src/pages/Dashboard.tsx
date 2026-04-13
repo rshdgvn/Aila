@@ -235,7 +235,7 @@ export default function Dashboard() {
                   strokeWidth={3}
                   className="group-hover:rotate-90 transition-transform duration-300"
                 />
-                New Journey
+                New 
               </button>
             </div>
 

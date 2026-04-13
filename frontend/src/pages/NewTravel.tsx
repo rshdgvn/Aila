@@ -1,127 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Polyline,
-  useMapEvents,
-  Popup,
-  useMap,
-} from "react-leaflet";
-import L from "leaflet";
 import polyline from "@mapbox/polyline";
-import "leaflet/dist/leaflet.css";
 import {
   ArrowLeft,
   MapPin,
-  Navigation,
+  LocateFixed,
   Car,
   Bus,
+  UserSquare2,
   Loader2,
-  CheckCircle2,
-  Footprints,
-  Train,
-  ChevronDown,
   Sparkles,
+  Navigation,
 } from "lucide-react";
 import { routesApi, tripsApi } from "../config/api";
-
-import icon from "leaflet/dist/images/marker-icon.png";
-import iconShadow from "leaflet/dist/images/marker-shadow.png";
-
-const DefaultIcon = L.icon({
-  iconUrl: icon,
-  shadowUrl: iconShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-});
-L.Marker.prototype.options.icon = DefaultIcon;
-
-const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
-
-function loadGoogleMaps(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if ((window as any).google?.maps?.places) {
-      resolve();
-      return;
-    }
-    if (document.querySelector("script[data-gm]")) {
-      const t = setInterval(() => {
-        if ((window as any).google?.maps?.places) {
-          clearInterval(t);
-          resolve();
-        }
-      }, 100);
-      return;
-    }
-    const s = document.createElement("script");
-    s.setAttribute("data-gm", "1");
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places`;
-    s.async = true;
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error("Google Maps failed to load"));
-    document.head.appendChild(s);
-  });
-}
-
-async function reverseGeocode(lat: number, lng: number): Promise<string> {
-  try {
-    const r = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_API_KEY}`,
-    );
-    const d = await r.json();
-    if (d.status === "OK" && d.results.length > 0) {
-      for (const res of d.results) {
-        if (
-          (res.types || []).some((t: string) =>
-            ["locality", "sublocality", "neighborhood", "route"].includes(t),
-          )
-        ) {
-          return res.formatted_address;
-        }
-      }
-      return d.results[0].formatted_address;
-    }
-  } catch (e) {}
-  return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-}
-
-function MapClickHandler({
-  pinMode,
-  onPin,
-}: {
-  pinMode: "origin" | "destination" | null;
-  onPin: (lat: number, lng: number, address: string) => void;
-}) {
-  const map = useMap();
-  useEffect(() => {
-    map.getContainer().style.cursor = pinMode ? "crosshair" : "";
-  }, [pinMode, map]);
-  useMapEvents({
-    async click(e) {
-      if (!pinMode) return;
-      const address = await reverseGeocode(e.latlng.lat, e.latlng.lng);
-      onPin(e.latlng.lat, e.latlng.lng, address);
-    },
-  });
-  return null;
-}
-
-function MapFitter({ routeCoords }: { routeCoords: [number, number][] }) {
-  const map = useMap();
-  useEffect(() => {
-    if (routeCoords.length > 0)
-      map.fitBounds(L.latLngBounds(routeCoords), { padding: [40, 40] });
-  }, [routeCoords, map]);
-  return null;
-}
-
-const stripHtml = (html: string) => {
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  return doc.body.textContent || "";
-};
+import { loadGoogleMaps, reverseGeocode } from "../config/utils";
+import MapSection from "../components/MapSection";
+import RouteOptions from "../components/RouteOptions";
 
 export default function NewTravel() {
   const navigate = useNavigate();
@@ -133,11 +27,15 @@ export default function NewTravel() {
   const [destCoords, setDestCoords] = useState<[number, number] | null>(null);
   const [pinMode, setPinMode] = useState<"origin" | "destination" | null>(null);
   const [mode, setMode] = useState("transit");
+  const [passengerType, setPassengerType] = useState("regular");
   const [loading, setLoading] = useState(false);
   const [routesData, setRoutesData] = useState<any>(null);
   const [selectedRouteIdx, setSelectedRouteIdx] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  const [ailaMascot, setAilaMascot] = useState("/aila-relax.png");
+  const [ailaMessages, setAilaMessages] = useState<string[]>([]);
 
   const originRef = useRef<HTMLInputElement>(null);
   const destRef = useRef<HTMLInputElement>(null);
@@ -147,6 +45,7 @@ export default function NewTravel() {
       .then(() => {
         const google = (window as any).google;
         if (!originRef.current || !destRef.current) return;
+
         const acOrigin = new google.maps.places.Autocomplete(
           originRef.current,
           { componentRestrictions: { country: "ph" } },
@@ -164,6 +63,7 @@ export default function NewTravel() {
               p.geometry.location.lng(),
             ]);
         });
+
         const acDest = new google.maps.places.Autocomplete(destRef.current, {
           componentRestrictions: { country: "ph" },
         });
@@ -184,6 +84,57 @@ export default function NewTravel() {
       .catch(console.error);
   }, []);
 
+  useEffect(() => {
+    if (loading) {
+      setAilaMascot("/aila-reading-map.png");
+      setAilaMessages([
+        "Give me a second, I'm scanning the map and checking the latest LFTRB fares...",
+      ]);
+      return;
+    }
+
+    if (routesData && routesData.routes?.length > 0) {
+      setAilaMascot("/aila-celebrating.png");
+      const selected = routesData.routes[selectedRouteIdx || 0];
+
+      let msg = `I found ${routesData.routes.length} options! `;
+      if (selected?.insights?.includes("Fastest"))
+        msg += "This one is the fastest route to beat the rush. ";
+      else if (selected?.insights?.includes("Cheapest"))
+        msg += "This path will save you the most money. ";
+      else if (selected?.insights?.includes("Most Comfortable"))
+        msg += "This is the most comfortable and direct path I could find. ";
+      else msg += "Here is a solid route for your trip. ";
+
+      if (mode === "transit" && selected.transfer_count > 0) {
+        msg += `Just a heads up, you'll need to transfer ${selected.transfer_count} time(s).`;
+      }
+      setAilaMessages([msg]);
+      return;
+    }
+
+    setAilaMascot("/aila-relax.png");
+    if (pinMode) {
+      setAilaMessages([
+        `Ready to drop a pin for your ${pinMode}? Just tap anywhere on the map!`,
+      ]);
+    } else if (!originCoords && !destCoords) {
+      setAilaMessages(["Kamusta, buddy! Where are we heading for this trip?"]);
+    } else {
+      setAilaMessages([
+        "Awesome! Type the full address or drop a pin for the other location.",
+      ]);
+    }
+  }, [
+    loading,
+    routesData,
+    selectedRouteIdx,
+    mode,
+    pinMode,
+    originCoords,
+    destCoords,
+  ]);
+
   const handleMapPin = (lat: number, lng: number, address: string) => {
     if (pinMode === "origin") {
       setOriginCoords([lat, lng]);
@@ -195,20 +146,59 @@ export default function NewTravel() {
     setPinMode(null);
   };
 
+  // Get Current Geolocation Feature
+  const handleCurrentLocation = (type: "origin" | "destination") => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const address = await reverseGeocode(lat, lng);
+        if (type === "origin") {
+          setOriginCoords([lat, lng]);
+          setOriginStr(address);
+        } else {
+          setDestCoords([lat, lng]);
+          setDestStr(address);
+        }
+      },
+      () => alert("Unable to retrieve your location"),
+    );
+  };
+
   const handleSearch = async () => {
     const o = originCoords
       ? `${originCoords[0]},${originCoords[1]}`
       : originStr;
     const d = destCoords ? `${destCoords[0]},${destCoords[1]}` : destStr;
     if (!o || !d) return;
+
     setLoading(true);
     setRoutesData(null);
     setSelectedRouteIdx(null);
     setSaved(false);
     setPinMode(null);
+
     try {
-      const data = await routesApi.getRoutes(o, d, mode);
-      const parsedRoutes = data.routes?.map((route: any) => ({
+      const data = await routesApi.getRoutes(o, d, mode, passengerType);
+
+      // Filter out duplicate routes
+      const rawRoutes = data.routes || [];
+      const uniqueRoutes = rawRoutes.filter(
+        (route: any, index: number, self: any[]) =>
+          index ===
+          self.findIndex(
+            (r) =>
+              r.summary === route.summary &&
+              r.total_distance_km === route.total_distance_km &&
+              r.grand_total_fare === route.grand_total_fare,
+          ),
+      );
+
+      const parsedRoutes = uniqueRoutes.map((route: any) => ({
         ...route,
         legs: route.legs.map((leg: any) => ({
           ...leg,
@@ -217,8 +207,9 @@ export default function NewTravel() {
             : [],
         })),
       }));
+
       setRoutesData({ ...data, routes: parsedRoutes });
-      if (parsedRoutes && parsedRoutes.length > 0) setSelectedRouteIdx(0);
+      if (parsedRoutes.length > 0) setSelectedRouteIdx(0);
     } catch (err) {
       console.error(err);
     } finally {
@@ -261,93 +252,137 @@ export default function NewTravel() {
     }
   };
 
+  const handleSaveForLater = async () => {
+    if (selectedRouteIdx === null || !routesData) return;
+    const route = routesData.routes[selectedRouteIdx];
+    setSaving(true);
+    try {
+      await tripsApi.create({
+        origin: originStr,
+        destination: destStr,
+        mode: mode,
+        distance_km: Number(route.total_distance_km.toFixed(2)),
+        duration_mins: Math.round(route.total_duration_mins),
+        total_fare: route.grand_total_fare || 0,
+        status: "pending",
+      });
+      setSaved(true);
+      setTimeout(() => navigate("/dashboard"), 1000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const activeRoute =
     selectedRouteIdx !== null && routesData
       ? routesData.routes[selectedRouteIdx]
       : null;
-  const allRouteCoords = activeRoute
-    ? activeRoute.legs.flatMap((l: any) => l.path)
-    : [];
 
   return (
-    <div className="h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
-      <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between z-10 shrink-0">
-        <button
-          onClick={() => navigate("/dashboard")}
-          className="text-slate-400 hover:text-slate-900 transition-colors p-2"
-        >
-          <ArrowLeft size={24} />
-        </button>
-        <div className="font-black text-lg tracking-tight uppercase">
-          Plan Your Journey
-        </div>
-        <div className="w-10"></div>
-      </header>
+    <div
+      className="h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-900 overflow-hidden"
+      style={{ fontFamily: '"Raleway", sans-serif' }}
+    >
+      {/* LEFT COLUMN: Aila & Inputs */}
+      <div className="w-full md:w-[380px] lg:w-[420px] bg-white border-r border-slate-200 flex flex-col z-20 shadow-xl shrink-0 h-full overflow-hidden">
+        <header className="px-6 py-5 flex items-center gap-4 border-b border-slate-100 bg-white sticky top-0 z-30">
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:border-indigo-200 transition-all hover:scale-105"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div
+            style={{ fontFamily: '"Sora", sans-serif' }}
+            className="font-extrabold text-xl tracking-tight text-[#0d1f5c]"
+          >
+            Plan Your Trip
+          </div>
+        </header>
 
-      <div className="flex flex-1 overflow-hidden flex-col md:row relative">
-        <div className="w-full md:w-[480px] bg-white border-r border-slate-200 flex flex-col shadow-2xl z-20 shrink-0 h-full overflow-hidden">
-          <div className="p-8 flex-1 overflow-y-auto space-y-8">
-            <div className="bg-indigo-600 rounded-[32px] p-6 text-white shadow-xl shadow-indigo-100 relative overflow-hidden">
-              <div className="flex items-start gap-4 relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/30">
-                  <img
-                    src="/aila-reading-map.png"
-                    className="w-10 h-10 object-contain animate-aila-float"
-                  />
-                </div>
-                <div>
-                  <h3 className="text-sm font-black uppercase tracking-widest mb-1 opacity-80">
-                    Aila Guide
-                  </h3>
-                  <p className="text-[15px] font-medium leading-relaxed italic">
-                    "
-                    {routesData?.aila_tip ||
-                      "Drop pins on the map or type your destination. I'll handle the rest!"}
-                    "
-                  </p>
-                </div>
+        <div className="flex-1 overflow-y-auto no-scrollbar bg-white flex flex-col">
+          {/* STATIC AILA CHAT UI */}
+          <div className="p-6 bg-white border-b border-slate-100 shrink-0">
+            <div className="flex items-center gap-5">
+              <div className="w-32 h-32 md:w-36 md:h-36 shrink-0 relative">
+                <div className="absolute inset-0 bg-indigo-50 rounded-full blur-2xl pointer-events-none"></div>
+                <img
+                  src={ailaMascot}
+                  alt="Aila Mascot"
+                  className="w-full h-full object-contain relative z-10"
+                />
               </div>
-              <Sparkles className="absolute -right-4 -top-4 w-24 h-24 opacity-10 rotate-12" />
+              <div className="flex-1 flex flex-col gap-2">
+                {ailaMessages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-slate-50 border border-slate-100 text-[#0d1f5c] text-sm font-semibold p-4 rounded-[24px] rounded-bl-sm shadow-sm leading-relaxed"
+                  >
+                    {msg}
+                  </div>
+                ))}
+              </div>
             </div>
+          </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
+          <div className="px-6 pb-6 pt-6 flex-1 space-y-8">
+            {/* Input Section */}
+            <div className="space-y-4 relative">
+              <div className="absolute left-[29px] top-10 bottom-10 w-0.5 bg-slate-200/60 z-0"></div>
+
+              {/* Start Input */}
+              <div className="flex items-center gap-3 relative z-10">
                 <div className="relative flex-1">
-                  <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-                    <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 ring-[6px] ring-indigo-50"></div>
+                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                    <div
+                      className={`w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm transition-colors ${originCoords ? "bg-indigo-600" : "bg-slate-300"}`}
+                    ></div>
                   </div>
                   <input
                     ref={originRef}
                     type="text"
                     placeholder="Starting Point"
-                    className="w-full pl-14 pr-4 py-5 bg-slate-50 border-2 border-transparent rounded-[24px] text-sm font-bold focus:bg-white focus:border-indigo-600 focus:ring-0 transition-all shadow-inner"
+                    className="w-full pl-12 pr-12 py-4.5 bg-slate-50 border border-slate-200 rounded-[20px] text-sm font-bold text-[#0d1f5c] focus:bg-white focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:font-medium placeholder:text-slate-400"
                     value={originStr}
                     onChange={(e) => {
                       setOriginStr(e.target.value);
                       setOriginCoords(null);
                     }}
                   />
+                  {/* Locate Me Button (Only on Origin) */}
+                  <button
+                    onClick={() => handleCurrentLocation("origin")}
+                    title="Use current location"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors"
+                  >
+                    <Navigation size={18} />
+                  </button>
                 </div>
                 <button
                   onClick={() =>
                     setPinMode(pinMode === "origin" ? null : "origin")
                   }
-                  className={`p-5 rounded-[22px] border-2 transition-all ${pinMode === "origin" ? "bg-indigo-600 border-indigo-600 text-white shadow-lg" : "bg-white border-slate-100 text-slate-400 hover:text-indigo-600 shadow-sm"}`}
+                  className={`w-14 h-14 shrink-0 rounded-[20px] border transition-all flex items-center justify-center gap-2 active:scale-95 ${pinMode === "origin" ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/30 font-black text-xs" : "bg-white border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 shadow-sm"}`}
                 >
-                  <MapPin size={22} />
+                  {pinMode === "origin" ? "PICK" : <MapPin size={22} />}
                 </button>
               </div>
 
-              <div className="flex items-center gap-3">
+              {/* Destination Input */}
+              <div className="flex items-center gap-3 relative z-10">
                 <div className="relative flex-1">
-                  <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-                    <div className="w-2.5 h-2.5 rounded-full bg-rose-500 ring-[6px] ring-rose-50"></div>
+                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                    <div
+                      className={`w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm transition-colors ${destCoords ? "bg-[#0d1f5c]" : "bg-slate-300"}`}
+                    ></div>
                   </div>
                   <input
                     ref={destRef}
                     type="text"
                     placeholder="Destination"
-                    className="w-full pl-14 pr-4 py-5 bg-slate-50 border-2 border-transparent rounded-[24px] text-sm font-bold focus:bg-white focus:border-indigo-600 focus:ring-0 transition-all shadow-inner"
+                    className="w-full pl-12 pr-4 py-4.5 bg-slate-50 border border-slate-200 rounded-[20px] text-sm font-bold text-[#0d1f5c] focus:bg-white focus:border-[#0d1f5c] focus:ring-4 focus:ring-indigo-50 transition-all placeholder:font-medium placeholder:text-slate-400"
                     value={destStr}
                     onChange={(e) => {
                       setDestStr(e.target.value);
@@ -359,172 +394,101 @@ export default function NewTravel() {
                   onClick={() =>
                     setPinMode(pinMode === "destination" ? null : "destination")
                   }
-                  className={`p-5 rounded-[22px] border-2 transition-all ${pinMode === "destination" ? "bg-rose-500 border-rose-500 text-white shadow-lg" : "bg-white border-slate-100 text-slate-400 hover:text-rose-500 shadow-sm"}`}
+                  className={`w-14 h-14 shrink-0 rounded-[20px] border transition-all flex items-center justify-center gap-2 active:scale-95 ${pinMode === "destination" ? "bg-[#0d1f5c] border-[#0d1f5c] text-white shadow-lg shadow-indigo-900/30 font-black text-xs" : "bg-white border-slate-200 text-slate-400 hover:text-[#0d1f5c] hover:border-indigo-200 shadow-sm"}`}
                 >
-                  <Navigation size={22} />
+                  {pinMode === "destination" ? (
+                    "PICK"
+                  ) : (
+                    <LocateFixed size={22} />
+                  )}
                 </button>
               </div>
             </div>
 
-            <div className="flex gap-3 bg-slate-100 p-1.5 rounded-[28px]">
+            {/* Travel Mode & Calculate */}
+            <div className="space-y-4">
+              <div className="bg-slate-50 p-2 rounded-2xl border border-slate-200 flex">
+                <button
+                  onClick={() => setMode("transit")}
+                  className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 ${mode === "transit" ? "bg-white text-indigo-700 shadow-sm border border-slate-100" : "text-slate-500 hover:text-slate-700"}`}
+                >
+                  <Bus size={18} /> Transit
+                </button>
+                <button
+                  onClick={() => setMode("driving")}
+                  className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 ${mode === "driving" ? "bg-white text-indigo-700 shadow-sm border border-slate-100" : "text-slate-500 hover:text-slate-700"}`}
+                >
+                  <Car size={18} /> Driving
+                </button>
+              </div>
+
+              {mode === "transit" && (
+                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                  <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+                    <UserSquare2 size={16} className="text-indigo-400" />{" "}
+                    Passenger ID Configuration
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: "regular", label: "Regular" },
+                      { id: "student", label: "Student ID" },
+                      { id: "senior", label: "Senior/PWD" },
+                    ].map((type) => (
+                      <button
+                        key={type.id}
+                        onClick={() => setPassengerType(type.id)}
+                        className={`py-3 px-4 rounded-xl border text-sm font-bold transition-all flex items-center justify-center ${passengerType === type.id ? "bg-indigo-50 border-indigo-200 text-[#0d1f5c] shadow-inner" : "bg-white border-slate-200 text-slate-500 hover:border-indigo-200 hover:bg-slate-50"}`}
+                      >
+                        {type.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <button
-                onClick={() => setMode("transit")}
-                className={`flex-1 py-4 px-4 rounded-[22px] text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${mode === "transit" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:bg-white/50"}`}
+                onClick={handleSearch}
+                disabled={loading || !originStr || !destStr}
+                className="w-full py-4.5 bg-[#0d1f5c] text-white text-sm font-extrabold rounded-2xl hover:bg-indigo-700 transition-all disabled:opacity-50 shadow-lg shadow-indigo-900/20 flex items-center justify-center gap-3 active:scale-[0.98]"
               >
-                <Bus size={18} /> Transit
-              </button>
-              <button
-                onClick={() => setMode("driving")}
-                className={`flex-1 py-4 px-4 rounded-[22px] text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${mode === "driving" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:bg-white/50"}`}
-              >
-                <Car size={18} /> Driving
+                {loading ? (
+                  <Loader2 className="animate-spin" size={22} />
+                ) : (
+                  <>
+                    <Sparkles size={19} /> Calculate Trip Options
+                  </>
+                )}
               </button>
             </div>
 
-            <button
-              onClick={handleSearch}
-              disabled={loading || !originStr || !destStr}
-              className="w-full py-5 bg-slate-950 text-white text-sm font-black uppercase tracking-[0.2em] rounded-[24px] hover:bg-indigo-600 transition-all disabled:opacity-30 shadow-xl shadow-slate-200 flex items-center justify-center gap-3"
-            >
-              {loading ? (
-                <Loader2 className="animate-spin" size={24} />
-              ) : (
-                "Calculate Route"
-              )}
-            </button>
-
-            {routesData?.routes?.map((route: any, i: number) => {
-              const isSelected = selectedRouteIdx === i;
-              return (
-                <div
-                  key={i}
-                  className={`rounded-[32px] transition-all border-2 overflow-hidden ${isSelected ? "border-indigo-600 bg-white shadow-2xl" : "border-slate-100 bg-white hover:border-slate-200"}`}
-                >
-                  <div
-                    onClick={() => setSelectedRouteIdx(i)}
-                    className="p-6 cursor-pointer flex items-center justify-between"
-                  >
-                    <div>
-                      <div className="font-black text-slate-900 text-lg mb-2">
-                        {route.summary || "Best Route"}
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-[10px] font-black">
-                          {route.total_distance_km.toFixed(1)} KM
-                        </span>
-                        <span className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-[10px] font-black">
-                          {Math.round(route.total_duration_mins)} MINS
-                        </span>
-                      </div>
-                    </div>
-                    <ChevronDown
-                      size={24}
-                      className={`text-slate-300 transition-transform ${isSelected ? "rotate-180 text-indigo-600" : ""}`}
-                    />
-                  </div>
-                  {isSelected && (
-                    <div className="px-6 pb-6 pt-2 border-t border-slate-50 bg-slate-50/30">
-                      <div className="space-y-4 mb-8">
-                        {route.legs.map((leg: any, idx: number) => (
-                          <div key={idx} className="flex gap-4">
-                            <div className="flex flex-col items-center">
-                              <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
-                                {leg.type === "WALKING" ? (
-                                  <Footprints size={14} />
-                                ) : leg.type === "TRANSIT" ? (
-                                  <Train size={14} />
-                                ) : (
-                                  <Car size={14} />
-                                )}
-                              </div>
-                              {idx !== route.legs.length - 1 && (
-                                <div className="w-0.5 flex-1 bg-slate-200 my-1"></div>
-                              )}
-                            </div>
-                            <p className="text-sm font-bold text-slate-700 pt-1.5">
-                              {stripHtml(leg.instructions)}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                      <button
-                        onClick={handleStartJourney}
-                        disabled={saving || saved}
-                        className={`w-full py-5 text-white text-xs font-black uppercase tracking-widest rounded-[22px] shadow-lg flex items-center justify-center gap-2 transition-all ${saved ? "bg-emerald-500" : "bg-indigo-600 hover:bg-indigo-700"}`}
-                      >
-                        {saving ? (
-                          <Loader2 className="animate-spin" size={20} />
-                        ) : saved ? (
-                          <>
-                            <CheckCircle2 size={20} /> Starting...
-                          </>
-                        ) : (
-                          "Start Live Tracking"
-                        )}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            <div className="w-20 h-0.5 bg-slate-100 mx-auto rounded-full mt-4"></div>
           </div>
         </div>
-
-        {/* Right Side Map */}
-        <div className="flex-1 relative z-0 h-full min-h-[500px] bg-slate-100">
-          <MapContainer
-            center={[14.5995, 120.9842]}
-            zoom={13}
-            style={{ height: "100%", width: "100%", zIndex: 0 }}
-            zoomControl={false}
-          >
-            <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
-            <MapClickHandler pinMode={pinMode} onPin={handleMapPin} />
-            {allRouteCoords.length > 0 && (
-              <MapFitter routeCoords={allRouteCoords} />
-            )}
-
-            {originCoords && (
-              <Marker position={originCoords}>
-                <Popup className="rounded-xl border-0 shadow-lg">
-                  <div className="font-semibold text-slate-900 mb-1">
-                    Origin
-                  </div>
-                  <div className="text-slate-500 text-xs">{originStr}</div>
-                </Popup>
-              </Marker>
-            )}
-            {destCoords && (
-              <Marker position={destCoords}>
-                <Popup className="rounded-xl border-0 shadow-lg">
-                  <div className="font-semibold text-slate-900 mb-1">
-                    Destination
-                  </div>
-                  <div className="text-slate-500 text-xs">{destStr}</div>
-                </Popup>
-              </Marker>
-            )}
-
-            {activeRoute &&
-              activeRoute.legs &&
-              activeRoute.legs.map((leg: any, i: number) => {
-                if (!leg.path || leg.path.length === 0) return null;
-                const isWalking = leg.type === "WALKING";
-                return (
-                  <Polyline
-                    key={i}
-                    positions={leg.path}
-                    color={isWalking ? "#94a3b8" : "#4f46e5"}
-                    weight={isWalking ? 4 : 5}
-                    dashArray={isWalking ? "8, 8" : undefined}
-                    lineCap="round"
-                    lineJoin="round"
-                  />
-                );
-              })}
-          </MapContainer>
-        </div>
       </div>
+
+      <MapSection
+        originCoords={originCoords}
+        originStr={originStr}
+        destCoords={destCoords}
+        destStr={destStr}
+        activeRoute={activeRoute}
+        pinMode={pinMode}
+        handleMapPin={handleMapPin}
+        mode={mode}
+      />
+
+      <RouteOptions
+        routesData={routesData}
+        selectedRouteIdx={selectedRouteIdx}
+        setSelectedRouteIdx={setSelectedRouteIdx}
+        mode={mode}
+        handleStartJourney={handleStartJourney}
+        handleSaveForLater={handleSaveForLater}
+        saving={saving}
+        saved={saved}
+      />
+
+      <style>{`.no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } .custom-pin { overflow: visible !important; }`}</style>
     </div>
   );
 }

@@ -1,4 +1,3 @@
-/* src/api.ts */
 import axios from 'axios'
 
 const api = axios.create({
@@ -55,12 +54,30 @@ export const tripsApi = {
 }
 
 export const routesApi = {
-  getRoutes: (origin: string, destination: string, mode: string) => 
-    api.get('/routes', { params: { origin, destination, mode } }).then(r => r.data)
+  getRoutes: (
+    origin: string, 
+    destination: string, 
+    mode: string, 
+    passenger_type: string = 'regular',
+    gas_price: number = 60.0, 
+    fuel_efficiency: number = 10.0
+  ) => 
+    api.get('/routes', { 
+      params: { 
+        origin, 
+        destination, 
+        mode, 
+        passenger_type, 
+        gas_price, 
+        fuel_efficiency 
+      } 
+    }).then(r => r.data),
+
+  autocomplete: (q: string) => 
+    api.get('/autocomplete', { params: { q } }).then(r => r.data)
 }
 
-
 export const ailaApi = {
-  chat: (data: { text: string, current_step?: number, total_steps?: number }) => 
+  chat: (data: { text: string; current_step: number; total_steps: number }) => 
     api.post('/aila/chat', data),
 }

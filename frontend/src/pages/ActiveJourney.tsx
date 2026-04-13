@@ -1,263 +1,528 @@
-import { useState, useEffect, useRef } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet'
-import L from 'leaflet'
-import polyline from '@mapbox/polyline'
-import 'leaflet/dist/leaflet.css'
-import { ArrowLeft, X, Send, Crosshair, PauseCircle, ChevronRight, CheckCircle2, Loader2, XCircle } from 'lucide-react'
-import { tripsApi, ailaApi } from '../config/api'
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Polyline,
+  useMap,
+} from "react-leaflet";
+import L from "leaflet";
+import polyline from "@mapbox/polyline";
+import "leaflet/dist/leaflet.css";
+import {
+  ArrowLeft,
+  Send,
+  Crosshair,
+  PauseCircle,
+  CheckCircle2,
+  Loader2,
+  XCircle,
+  Footprints,
+  Train,
+  Car,
+} from "lucide-react";
+import { tripsApi, ailaApi } from "../config/api";
 
 // --- Map Config ---
 const userIcon = L.divIcon({
-  className: '',
-  html: `<div style="width: 20px; height: 20px; background-color: #3b82f6; border-radius: 50%; border: 4px solid white; box-shadow: 0 0 12px rgba(59,130,246,0.6);"></div>`,
-  iconSize: [20, 20], iconAnchor: [10, 10]
-})
+  className: "",
+  html: `<div style="width: 24px; height: 24px; background-color: #4f46e5; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 14px rgba(79,70,229,0.5);"></div>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+});
 
+const destIcon = L.divIcon({
+  className: "custom-pin",
+  html: `<div class="w-6 h-6 bg-[#0d1f5c] rounded-full border-[3px] border-white shadow-md"></div>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+});
+
+// Dynamic Map Fitter (Flies to the remaining route smoothly)
 function MapFitter({ coords }: { coords: [number, number][] }) {
-  const map = useMap()
+  const map = useMap();
   useEffect(() => {
-    if (coords.length > 0) map.fitBounds(L.latLngBounds(coords), { padding: [60, 60] })
-  }, [coords, map])
-  return null
+    if (coords && coords.length > 0) {
+      map.flyToBounds(L.latLngBounds(coords), {
+        padding: [80, 80],
+        duration: 1.5,
+        easeLinearity: 0.25,
+      });
+    }
+  }, [coords, map]);
+  return null;
 }
+
+// Haversine Formula for distance calculation (in meters)
+const getDistance = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+) => {
+  const R = 6371e3;
+  const p1 = (lat1 * Math.PI) / 180;
+  const p2 = (lat2 * Math.PI) / 180;
+  const dp = ((lat2 - lat1) * Math.PI) / 180;
+  const dl = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dp / 2) * Math.sin(dp / 2) +
+    Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) * Math.sin(dl / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
 
 const EMOTION_ASSETS: Record<string, string> = {
-  relax: '/aila-relax.png',
-  thinking: '/aila-thinking.png',
-  "reading-map": '/aila-reading-map.png',
-  celebrating: '/aila-celebrating.png',
-  confused: '/aila-confused.png',
-  apolegitic: '/aila-apolegitic.png',
-  waving: '/aila-waving.png'
-}
-
-const EMOTION_ANIMATIONS: Record<string, string> = {
-  relax: 'animate-aila-float',
-  waving: 'animate-aila-float',
-  thinking: 'animate-pulse',
-  celebrating: 'animate-aila-celebrate',
-  apolegitic: 'animate-aila-shake',
-  confused: 'animate-aila-shake',
-}
+  relax: "/aila-relax.png",
+  thinking: "/aila-thinking.png",
+  "reading-map": "/aila-reading-map.png",
+  celebrating: "/aila-celebrating.png",
+  confused: "/aila-confused.png",
+  apolegitic: "/aila-apolegitic.png",
+  waving: "/aila-relax.png", // Fallback if waving doesn't exist
+};
 
 interface ChatMessage {
-  role: 'aila' | 'user';
+  role: "aila" | "user";
   text: string;
 }
 
 export default function ActiveJourney() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  
-  const stateData = location.state as { tripId: number; route: any; origin: string; destination: string; mode: string } | null;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const stateData = location.state as any;
   const tripId = stateData?.tripId;
-  const route = stateData?.route || { legs: [] };
 
-  const [currentStepIdx, setCurrentStepIdx] = useState(0)
-  const [isLiveGPS, setIsLiveGPS] = useState(true)
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
-  const [isChatOpen, setIsChatOpen] = useState(false)
-  const [chatInput, setChatInput] = useState('')
-  const [loadingAila, setLoadingAila] = useState(false)
+  // --- State Persistence ---
+  const [routeInfo, setRouteInfo] = useState<any>(null);
+
+  useEffect(() => {
+    if (stateData?.route) {
+      const info = {
+        route: stateData.route,
+        origin: stateData.origin,
+        destination: stateData.destination,
+        mode: stateData.mode,
+      };
+      setRouteInfo(info);
+      localStorage.setItem(`active_trip_${tripId}`, JSON.stringify(info));
+    } else if (tripId) {
+      const saved = localStorage.getItem(`active_trip_${tripId}`);
+      if (saved) setRouteInfo(JSON.parse(saved));
+    }
+  }, [stateData, tripId]);
+
+  // --- State ---
+  const [currentStepIdx, setCurrentStepIdx] = useState(0);
+  const [isLiveGPS, setIsLiveGPS] = useState(true);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(
+    null,
+  );
+
+  // Chat State
+  const [chatInput, setChatInput] = useState("");
+  const [loadingAila, setLoadingAila] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'aila', text: "Ingat sa byahe! I'm tracking our route. If you need anything, tap my face to ask!" }
-  ])
-  const [currentEmotion, setCurrentEmotion] = useState('waving');
+    {
+      role: "aila",
+      text: "Ingat sa byahe! I'm tracking our route. If you need anything, just chat with me here!",
+    },
+  ]);
+  const [currentEmotion, setCurrentEmotion] = useState("relax");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const chatEndRef = useRef<HTMLDivElement>(null)
+  const decodedLegs =
+    routeInfo?.route?.legs?.map((leg: any) => ({
+      ...leg,
+      path: leg.geometry
+        ? (polyline.decode(leg.geometry) as [number, number][])
+        : [],
+    })) || [];
 
-  const decodedLegs = route.legs.map((leg: any) => ({
-    ...leg,
-    path: leg.geometry ? polyline.decode(leg.geometry) as [number, number][] : []
-  }));
+  // Get the absolute final coordinate for the destination pin
+  const finalLeg = decodedLegs[decodedLegs.length - 1];
+  const destinationCoords =
+    finalLeg && finalLeg.path.length > 0
+      ? finalLeg.path[finalLeg.path.length - 1]
+      : null;
 
+  // --- GPS Tracking ---
   useEffect(() => {
     if (!isLiveGPS) return;
     const watchId = navigator.geolocation.watchPosition(
       (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
-      (err) => { console.warn(err); setIsLiveGPS(false); },
-      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      (err) => {
+        console.warn("GPS Error:", err);
+        setIsLiveGPS(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );
     return () => navigator.geolocation.clearWatch(watchId);
   }, [isLiveGPS]);
 
-  const handleUpdateStatus = async (status: 'finished' | 'cancelled') => {
+  // --- Auto-Advance Step based on GPS Location ---
+  useEffect(() => {
+    if (!userLocation || decodedLegs.length === 0) return;
+
+    const currentLeg = decodedLegs[currentStepIdx];
+    if (!currentLeg || !currentLeg.path || currentLeg.path.length === 0) return;
+
+    // Get the last coordinate of the current step
+    const legEnd = currentLeg.path[currentLeg.path.length - 1];
+    const dist = getDistance(
+      userLocation[0],
+      userLocation[1],
+      legEnd[0],
+      legEnd[1],
+    );
+
+    // Kung ang user ay less than 50 meters sa dulo ng step, auto next step na!
+    if (dist < 50 && currentStepIdx < decodedLegs.length - 1) {
+      setCurrentStepIdx((prev) => prev + 1);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "aila",
+          text: "Nice! We reached a checkpoint. Let's head to the next step.",
+        },
+      ]);
+      setCurrentEmotion("reading-map");
+    }
+  }, [userLocation, currentStepIdx, decodedLegs]);
+
+  // --- Handlers ---
+  const handleUpdateStatus = async (status: "finished" | "cancelled") => {
     if (!tripId) return;
     setIsUpdatingStatus(true);
     try {
       await tripsApi.updateStatus(tripId, status);
-      navigate('/dashboard');
+      localStorage.removeItem(`active_trip_${tripId}`);
+      navigate("/dashboard");
     } catch (err) {
-      console.error('Status update failed', err);
+      console.error("Status update failed", err);
       setIsUpdatingStatus(false);
     }
-  }
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim() || loadingAila) return;
 
     const userText = chatInput.trim();
-    setMessages(prev => [...prev, { role: 'user', text: userText }]);
-    setChatInput('');
+    setMessages((prev) => [...prev, { role: "user", text: userText }]);
+    setChatInput("");
     setLoadingAila(true);
-    setCurrentEmotion('thinking');
+    setCurrentEmotion("thinking");
 
     try {
       const response = await ailaApi.chat({
         text: userText,
         current_step: currentStepIdx + 1,
-        total_steps: decodedLegs.length
+        total_steps: decodedLegs.length,
       });
-      
-      const { text, emotion } = response.data;
-      setCurrentEmotion(emotion || 'relax');
-      setMessages(prev => [...prev, { role: 'aila', text }]);
+      setCurrentEmotion(response.data.emotion || "relax");
+      setMessages((prev) => [
+        ...prev,
+        { role: "aila", text: response.data.text },
+      ]);
     } catch (err) {
-      setCurrentEmotion('confused');
-      setMessages(prev => [...prev, { role: 'aila', text: "Oops, lost connection! Paki-try ulit, buddy!" }]);
+      setCurrentEmotion("confused");
+      setMessages((prev) => [
+        ...prev,
+        { role: "aila", text: "Oops, lost connection! Paki-try ulit, buddy!" },
+      ]);
     } finally {
       setLoadingAila(false);
     }
-  }
+  };
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isChatOpen]);
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-  const currentStep = decodedLegs[currentStepIdx];
+  if (!routeInfo) {
+    return (
+      <div className="h-screen bg-slate-50 flex items-center justify-center flex-col gap-4">
+        <Loader2 className="animate-spin text-indigo-600" size={40} />
+        <p className="text-slate-500 font-bold">Loading your journey data...</p>
+      </div>
+    );
+  }
+
+  // Get only the remaining coordinates to focus the map dynamically
+  const remainingCoords = decodedLegs
+    .slice(currentStepIdx)
+    .flatMap((l: any) => l.path);
   const allRouteCoords = decodedLegs.flatMap((l: any) => l.path);
 
   return (
-    <div className="h-screen bg-slate-950 flex flex-col font-sans relative overflow-hidden text-white">
-      
-      <header className="bg-slate-950/80 backdrop-blur-md px-6 py-4 flex items-center justify-between z-10 shrink-0 absolute top-0 w-full border-b border-slate-800">
-        <button onClick={() => navigate('/dashboard')} className="text-slate-400 hover:text-white"><ArrowLeft size={24} /></button>
-        <div className="text-center">
-          <div className="font-extrabold text-[14px] uppercase tracking-tighter text-slate-400">TRIP #{tripId}</div>
-          <div className="text-emerald-400 text-xs font-bold animate-pulse">● {decodedLegs.length - currentStepIdx} steps left</div>
-        </div>
-        <button onClick={() => setIsLiveGPS(!isLiveGPS)} className={`px-4 py-2 rounded-full text-xs font-extrabold flex items-center gap-1.5 transition-all ${isLiveGPS ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'}`}>
-          {isLiveGPS ? <Crosshair size={14} className="animate-spin-slow" /> : <PauseCircle size={14} />}
-          {isLiveGPS ? 'LIVE' : 'FIXED'}
-        </button>
-      </header>
-
-      <div className="flex-1 relative z-0">
-        <MapContainer center={[14.5995, 120.9842]} zoom={14} style={{ height: '100%', width: '100%' }} zoomControl={false}>
-          <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
-          {allRouteCoords.length > 0 && <MapFitter coords={allRouteCoords} />}
-          {decodedLegs.map((leg: any, i: number) => (
-            <Polyline key={i} positions={leg.path} color={i < currentStepIdx ? '#334155' : i === currentStepIdx ? '#4f46e5' : '#1e293b'} weight={i === currentStepIdx ? 8 : 4} />
-          ))}
-          {userLocation && <Marker position={userLocation} icon={userIcon} />}
-        </MapContainer>
-      </div>
-
-      <div className="absolute bottom-0 w-full z-10 pointer-events-none pb-6 px-4 flex flex-col items-center">
-        
-        {/* AILA FLOATING MASCOT */}
-        <div className="w-full flex justify-end mb-4 pointer-events-auto max-w-lg">
-          <div className="relative group">
-            {!isChatOpen && (
-              <div className="absolute -top-12 right-0 bg-white text-slate-900 text-[10px] font-black px-3 py-1.5 rounded-2xl shadow-xl animate-bounce">
-                ASK ME!
-              </div>
-            )}
-            <button onClick={() => setIsChatOpen(true)} className="w-24 h-24 bg-indigo-600 rounded-full flex items-center justify-center shadow-2xl ring-4 ring-slate-900 overflow-hidden relative transition-transform active:scale-90">
-              <img 
-                src={EMOTION_ASSETS[currentEmotion]} 
-                className={`w-[120%] h-[120%] object-contain absolute bottom-[-10%] ${EMOTION_ANIMATIONS[currentEmotion]}`} 
-                alt="Aila"
-              />
-            </button>
+    <div
+      className="h-screen bg-slate-50 flex flex-col md:flex-row font-sans overflow-hidden text-slate-900"
+      style={{ fontFamily: '"Raleway", sans-serif' }}
+    >
+      {/* LEFT COLUMN: Aila Chat Interface */}
+      <div className="w-full md:w-[360px] lg:w-[400px] bg-white border-r border-slate-200 flex flex-col z-20 shadow-xl shrink-0 h-[45vh] md:h-full">
+        <header className="p-5 border-b border-slate-100 bg-white flex items-center gap-4 shrink-0">
+          <div className="w-32 h-32 shrink-0 relative">
+            <div className="absolute inset-0 bg-indigo-50 rounded-full blur-2xl pointer-events-none"></div>
+            <img
+              src={EMOTION_ASSETS[currentEmotion] || "/aila-relax.png"}
+              className="w-full h-full object-contain relative z-10 transition-all duration-300 drop-shadow-md"
+              alt="Aila"
+            />
           </div>
-        </div>
-
-        {/* CURRENT STEP CARD */}
-        {currentStep && (
-          <div className="bg-white rounded-[32px] p-6 shadow-2xl pointer-events-auto border border-slate-200 text-slate-900 max-w-lg w-full">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-[10px] font-black bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full uppercase tracking-widest">Step {currentStepIdx + 1} of {decodedLegs.length}</span>
-              <button onClick={() => handleUpdateStatus('cancelled')} className="text-rose-500 hover:bg-rose-50 p-2 rounded-full transition-colors"><XCircle size={20}/></button>
-            </div>
-            
-            <h2 className="text-xl font-black text-slate-900 mb-6 leading-tight min-h-[3rem]">
-              {currentStep.instructions.replace(/<[^>]*>?/gm, '') || "Continue straight"}
+          <div className="flex flex-col">
+            <h2
+              style={{ fontFamily: '"Sora", sans-serif' }}
+              className="font-extrabold text-[#0d1f5c] text-xl tracking-tight"
+            >
+              Aila
             </h2>
-
-            <div className="flex gap-3">
-              <button disabled={currentStepIdx === 0} onClick={() => setCurrentStepIdx(prev => prev - 1)} className="p-4 bg-slate-100 rounded-2xl text-slate-400 disabled:opacity-30"><ArrowLeft size={20}/></button>
-              
-              {currentStepIdx < decodedLegs.length - 1 ? (
-                <button onClick={() => setCurrentStepIdx(prev => prev + 1)} className="flex-1 bg-slate-900 text-white font-bold rounded-2xl flex items-center justify-center gap-2">
-                  Next Step <ChevronRight size={18}/>
-                </button>
-              ) : (
-                <button 
-                  onClick={() => handleUpdateStatus('finished')} 
-                  disabled={isUpdatingStatus}
-                  className="flex-1 bg-emerald-500 text-white font-black rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-200"
-                >
-                  {isUpdatingStatus ? <Loader2 className="animate-spin"/> : <CheckCircle2 size={18} />} 
-                  ARRIVED
-                </button>
-              )}
-            </div>
+            <p className="text-[11px] font-bold text-indigo-500 uppercase tracking-widest mt-1">
+              Your trip assistant
+            </p>
           </div>
-        )}
-      </div>
+        </header>
 
-      {/* CHAT INTERFACE */}
-      <div className={`absolute bottom-0 w-full bg-white z-50 rounded-t-[40px] shadow-2xl transition-all duration-500 ease-out flex flex-col ${isChatOpen ? 'h-[85vh]' : 'h-0 overflow-hidden'}`}>
-        <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-indigo-50/50">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm overflow-hidden border border-indigo-100">
-              <img src={EMOTION_ASSETS[currentEmotion]} className={EMOTION_ANIMATIONS[currentEmotion]} />
-            </div>
-            <div>
-              <p className="font-black text-slate-900 leading-none mb-1">Aila Buddy</p>
-              <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Active Tracking</p>
-            </div>
-          </div>
-          <button onClick={() => setIsChatOpen(false)} className="p-3 bg-white text-slate-400 rounded-2xl hover:text-rose-500 shadow-sm border border-slate-100"><X size={20}/></button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/30">
+        <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50 no-scrollbar">
           {messages.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] p-4 rounded-3xl text-sm font-medium ${
-                msg.role === 'user' ? 'bg-indigo-600 text-white rounded-br-none shadow-indigo-100 shadow-lg' : 'bg-white text-slate-800 rounded-bl-none border border-slate-100 shadow-sm'
-              }`}>
+            <div
+              key={i}
+              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+            >
+              <div
+                className={`max-w-[85%] p-4 rounded-[20px] text-[13px] font-semibold leading-relaxed shadow-sm ${
+                  msg.role === "user"
+                    ? "bg-[#0d1f5c] text-white rounded-br-sm"
+                    : "bg-white text-slate-700 border border-slate-200 rounded-bl-sm"
+                }`}
+              >
                 {msg.text}
               </div>
             </div>
           ))}
           {loadingAila && (
-             <div className="flex justify-start animate-pulse">
-               <div className="bg-white p-4 rounded-3xl rounded-bl-none border border-slate-100 text-slate-400 text-xs font-bold tracking-widest">AILA IS TYPING...</div>
-             </div>
+            <div className="flex justify-start">
+              <div className="bg-white p-4 rounded-[20px] rounded-bl-sm border border-slate-200 shadow-sm flex gap-2 items-center">
+                <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
+                <div
+                  className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"
+                  style={{ animationDelay: "150ms" }}
+                ></div>
+                <div
+                  className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"
+                  style={{ animationDelay: "300ms" }}
+                ></div>
+              </div>
+            </div>
           )}
           <div ref={chatEndRef} />
         </div>
 
-        <form onSubmit={handleSendMessage} className="p-6 bg-white border-t border-slate-50">
+        <form
+          onSubmit={handleSendMessage}
+          className="p-4 bg-white border-t border-slate-100 shrink-0"
+        >
           <div className="relative">
-            <input 
-              type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)}
-              placeholder="E.g. Malayo pa ba?"
-              className="w-full pl-6 pr-16 py-5 bg-slate-100 border-none rounded-[24px] text-sm font-bold focus:ring-2 focus:ring-indigo-600 transition-all text-slate-900"
+            <input
+              type="text"
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              placeholder="Ask me anything..."
+              className="w-full pl-5 pr-14 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all outline-none text-[#0d1f5c] placeholder:text-slate-400"
             />
-            <button type="submit" disabled={!chatInput.trim()} className="absolute right-2 top-2 bottom-2 px-5 bg-indigo-600 text-white rounded-[18px] shadow-lg shadow-indigo-200 disabled:opacity-20">
+            <button
+              type="submit"
+              disabled={!chatInput.trim()}
+              className="absolute right-2 top-2 bottom-2 px-4 bg-indigo-600 text-white rounded-xl shadow-md disabled:opacity-30 hover:bg-indigo-700 transition-colors active:scale-95 flex items-center justify-center"
+            >
               <Send size={18} />
             </button>
           </div>
         </form>
       </div>
 
-      {isChatOpen && <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity" onClick={() => setIsChatOpen(false)} />}
+      {/* MIDDLE COLUMN: Map */}
+      <div className="flex-1 relative z-0 h-[30vh] md:h-full">
+        {/* Top Floating Controls */}
+        <div className="absolute top-4 left-4 right-4 z-[400] flex justify-between items-start pointer-events-none">
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="w-12 h-12 bg-white/90 backdrop-blur border border-slate-200 text-slate-600 rounded-full flex items-center justify-center shadow-lg hover:text-[#0d1f5c] pointer-events-auto transition-transform active:scale-95"
+          >
+            <ArrowLeft size={22} />
+          </button>
+          <div className="flex flex-col items-end gap-2 pointer-events-auto">
+            <div className="bg-white/90 backdrop-blur px-4 py-2 border border-slate-200 rounded-2xl shadow-lg flex items-center gap-3">
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+              <span className="text-[11px] font-black tracking-widest text-[#0d1f5c] uppercase">
+                Trip #{tripId}
+              </span>
+            </div>
+            <button
+              onClick={() => setIsLiveGPS(!isLiveGPS)}
+              className={`px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest shadow-lg flex items-center gap-2 transition-all border ${isLiveGPS ? "bg-indigo-50 border-indigo-200 text-indigo-700" : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"}`}
+            >
+              {isLiveGPS ? (
+                <Crosshair size={14} className="animate-spin-slow" />
+              ) : (
+                <PauseCircle size={14} />
+              )}
+              {isLiveGPS ? "Tracking Live" : "GPS Paused"}
+            </button>
+          </div>
+        </div>
+
+        <MapContainer
+          center={[14.5995, 120.9842]}
+          zoom={14}
+          style={{ height: "100%", width: "100%" }}
+          zoomControl={false}
+        >
+          <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+
+          {/* Dynamically refit the map whenever the remaining route changes */}
+          {remainingCoords.length > 0 ? (
+            <MapFitter coords={remainingCoords} />
+          ) : (
+            allRouteCoords.length > 0 && <MapFitter coords={allRouteCoords} />
+          )}
+
+          {decodedLegs.map((leg: any, i: number) => {
+            const isPassedOrCurrent = i <= currentStepIdx;
+            const isFuture = i > currentStepIdx;
+            const isActiveStep = i === currentStepIdx;
+
+            return (
+              <Polyline
+                key={`${i}-${currentStepIdx}`}
+                positions={leg.path}
+                pathOptions={{
+                  color: isPassedOrCurrent ? "#4f46e5" : "#cbd5e1",
+                  weight: isActiveStep ? 7 : 5,
+                  dashArray: isFuture ? "8, 8" : undefined,
+                }}
+              />
+            );
+          })}
+          {userLocation && <Marker position={userLocation} icon={userIcon} />}
+          {destinationCoords && (
+            <Marker
+              position={destinationCoords as [number, number]}
+              icon={destIcon}
+            />
+          )}
+        </MapContainer>
+      </div>
+
+      {/* RIGHT COLUMN: Journey Tracking */}
+      <div className="w-full md:w-[380px] lg:w-[420px] bg-white border-l border-slate-200 flex flex-col z-20 shadow-xl shrink-0 h-[45vh] md:h-full">
+        <header className="px-6 py-5 border-b border-slate-100 shrink-0">
+          <h2
+            style={{ fontFamily: '"Sora", sans-serif' }}
+            className="font-extrabold text-[#0d1f5c] text-xl tracking-tight"
+          >
+            Your Route
+          </h2>
+          <p className="text-sm text-slate-500 font-bold mt-1">
+            {decodedLegs.length - currentStepIdx} steps remaining
+          </p>
+        </header>
+
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-50 relative no-scrollbar">
+          <div className="absolute left-[39px] top-6 bottom-6 w-0.5 bg-slate-200 rounded-full z-0"></div>
+
+          <div className="space-y-6 relative z-10">
+            {decodedLegs.map((leg: any, idx: number) => {
+              const isPast = idx < currentStepIdx;
+              const isCurrent = idx === currentStepIdx;
+
+              return (
+                <div
+                  key={idx}
+                  className={`flex gap-4 transition-all duration-300 ${isPast ? "opacity-50" : "opacity-100"} ${isCurrent ? "scale-105 transform origin-left" : ""}`}
+                >
+                  <div className="shrink-0 flex flex-col items-center pt-1">
+                    <div
+                      className={`w-8 h-8 rounded-full border-2 flex items-center justify-center shadow-sm ${
+                        isCurrent
+                          ? "bg-indigo-600 border-indigo-600 text-white shadow-indigo-600/30"
+                          : isPast
+                            ? "bg-indigo-100 border-indigo-200 text-indigo-400"
+                            : "bg-white border-slate-300 text-slate-400"
+                      }`}
+                    >
+                      {leg.type === "WALKING" ? (
+                        <Footprints size={14} />
+                      ) : leg.type === "TRANSIT" ? (
+                        <Train size={14} />
+                      ) : (
+                        <Car size={14} />
+                      )}
+                    </div>
+                  </div>
+                  <div
+                    className={`flex-1 p-4 rounded-2xl border ${isCurrent ? "bg-white border-indigo-200 shadow-lg shadow-indigo-900/5" : "bg-transparent border-transparent"}`}
+                  >
+                    {isCurrent && (
+                      <div className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">
+                        Current Step
+                      </div>
+                    )}
+                    <p
+                      className={`text-[13px] font-bold leading-snug ${isCurrent ? "text-[#0d1f5c]" : "text-slate-600"}`}
+                    >
+                      {leg.instructions.replace(/<[^>]*>?/gm, "")}
+                    </p>
+                    {leg.estimated_fare > 0 && (
+                      <div className="mt-2 inline-block px-2 py-1 bg-emerald-50 text-emerald-700 text-[11px] font-black rounded-md border border-emerald-100">
+                        ₱{leg.estimated_fare.toFixed(2)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="p-5 bg-white border-t border-slate-100 shrink-0 space-y-3 shadow-[0_-15px_30px_rgba(13,31,92,0.03)]">
+          {currentStepIdx < decodedLegs.length - 1 ? (
+            <button
+              onClick={() => setCurrentStepIdx((prev) => prev + 1)}
+              className="w-full py-4 bg-[#0d1f5c] hover:bg-indigo-900 text-white font-extrabold text-sm rounded-xl flex items-center justify-center shadow-lg shadow-indigo-900/20 active:scale-[0.98] transition-all"
+            >
+              Next Step (Manual Override)
+            </button>
+          ) : (
+            <button
+              onClick={() => handleUpdateStatus("finished")}
+              disabled={isUpdatingStatus}
+              className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-sm rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 active:scale-[0.98] transition-all"
+            >
+              {isUpdatingStatus ? (
+                <Loader2 className="animate-spin" size={20} />
+              ) : (
+                <CheckCircle2 size={20} />
+              )}
+              Complete Trip
+            </button>
+          )}
+
+          <button
+            onClick={() => handleUpdateStatus("cancelled")}
+            disabled={isUpdatingStatus}
+            className="w-full py-3.5 bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-600 font-extrabold text-sm rounded-xl flex items-center justify-center gap-2 border border-slate-200 hover:border-rose-200 transition-all active:scale-[0.98]"
+          >
+            <XCircle size={18} /> Cancel Trip
+          </button>
+        </div>
+      </div>
+
+      <style>{`.no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } .custom-pin { overflow: visible !important; }`}</style>
     </div>
-  )
+  );
 }
