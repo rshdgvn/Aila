@@ -375,7 +375,7 @@ export default function Home() {
                 <img
                   src="/aila-relax.png"
                   alt="Aila mascot"
-                  className="w-96 h-96 md:w-96 md:h-96 object-contain"
+                  className="w-64 h-64 md:w-72 md:h-72 object-contain"
                   style={{
                     filter: "drop-shadow(0 20px 40px rgba(79,70,229,0.18))",
                   }}
