@@ -16,11 +16,14 @@ import {
   AlertCircle,
   CheckCircle2,
   Share2,
+  Menu,
+  X,
 } from "lucide-react";
 
 export default function Home() {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!document.getElementById("raleway-sora-font")) {
@@ -124,7 +127,7 @@ export default function Home() {
     >
       <div className="fixed top-4 left-0 right-0 z-50 px-4 sm:px-6 pointer-events-none">
         <nav
-          className={`max-w-7xl mx-auto h-[68px] flex items-center justify-between px-6 rounded-2xl transition-all duration-300 pointer-events-auto ${
+          className={`max-w-7xl mx-auto h-[68px] flex items-center justify-between px-4 sm:px-6 rounded-2xl transition-all duration-300 pointer-events-auto ${
             scrolled
               ? "bg-white/85 backdrop-blur-xl border border-indigo-100 shadow-[0_8px_30px_rgba(0,0,0,0.07)]"
               : "bg-white/50 backdrop-blur-md border border-white/60 shadow-sm"
@@ -168,7 +171,7 @@ export default function Home() {
             </a>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               to="/login"
               className="hidden sm:block text-sm font-bold text-slate-500 hover:text-indigo-600 px-4 py-2 transition-all"
@@ -177,15 +180,83 @@ export default function Home() {
             </Link>
             <Link
               to="/register"
-              className="bg-[#0d1f5c] hover:bg-indigo-600 text-white text-sm font-extrabold px-6 py-2.5 rounded-xl transition-all shadow-md shadow-indigo-900/20"
+              className="bg-[#0d1f5c] hover:bg-indigo-600 text-white text-sm font-extrabold px-4 sm:px-6 py-2.5 rounded-xl transition-all shadow-md shadow-indigo-900/20"
             >
               Get started
             </Link>
+            <button
+              className="md:hidden p-2 text-[#0d1f5c] hover:bg-indigo-50 rounded-xl transition-all"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu size={22} />
+            </button>
           </div>
         </nav>
       </div>
 
-      <main className="relative flex-1 flex flex-col pt-28">
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-[60] bg-white flex flex-col p-6">
+          <div className="flex items-center justify-between mb-10">
+            <div className="flex items-center gap-3">
+              <img
+                src="/aila-icon.png"
+                alt="Aila"
+                className="w-8 h-8 object-contain"
+              />
+              <span
+                style={{ fontFamily: '"Sora", sans-serif' }}
+                className="text-xl font-extrabold text-[#0d1f5c] tracking-tight"
+              >
+                Aila.
+              </span>
+            </div>
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-2 text-slate-400 hover:text-[#0d1f5c]"
+            >
+              <X size={24} />
+            </button>
+          </div>
+          <nav className="flex flex-col gap-2 flex-1">
+            {["Home", "Why Aila", "How it works", "About"].map((item, i) => (
+              <a
+                key={item}
+                href={
+                  i === 0
+                    ? "#"
+                    : i === 1
+                      ? "#problem"
+                      : i === 2
+                        ? "#hiw"
+                        : "#about"
+                }
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-4 py-4 rounded-2xl text-lg font-bold text-[#0d1f5c] hover:bg-indigo-50 transition-all"
+              >
+                {item}
+              </a>
+            ))}
+          </nav>
+          <div className="flex flex-col gap-3 mt-6">
+            <Link
+              to="/login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full text-center py-4 rounded-2xl border-2 border-indigo-100 font-extrabold text-[#0d1f5c]"
+            >
+              Log in
+            </Link>
+            <Link
+              to="/register"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full text-center py-4 rounded-2xl bg-[#0d1f5c] text-white font-extrabold"
+            >
+              Get started
+            </Link>
+          </div>
+        </div>
+      )}
+
+      <main className="relative flex-1 flex flex-col pt-24 sm:pt-28">
         <div className="relative max-w-7xl mx-auto w-full px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-0 items-center min-h-[82vh] py-10 lg:py-0">
           <div
             className="absolute right-[-80px] top-1/2 -translate-y-1/2 w-[520px] h-[520px] rounded-full bg-indigo-200/30 pointer-events-none"
@@ -380,82 +451,45 @@ export default function Home() {
 
       <section
         id="problem"
-        className="bg-white py-24 px-6 lg:px-12 border-b border-indigo-50"
+        className="bg-white py-16 sm:py-24 px-5 sm:px-6 lg:px-12"
       >
-        <div className="max-w-4xl mx-auto text-center">
-          <h2
-            style={{ fontFamily: '"Sora", sans-serif' }}
-            className="text-3xl md:text-4xl font-extrabold text-[#0d1f5c] tracking-tight mb-8"
-          >
-            Aila is built for real travel challenges.
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-            <div className="bg-indigo-50/50 p-6 rounded-2xl border border-indigo-100/50">
-              <AlertCircle className="text-rose-500 mb-4" size={28} />
-              <h3 className="font-bold text-[#0d1f5c] mb-2">Unsure Routes</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Finding the best and fastest way to reach your destination is
-                often confusing, whether driving or commuting.
-              </p>
-            </div>
-            <div className="bg-indigo-50/50 p-6 rounded-2xl border border-indigo-100/50">
-              <AlertCircle className="text-rose-500 mb-4" size={28} />
-              <h3 className="font-bold text-[#0d1f5c] mb-2">Hidden Costs</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Travelers constantly face uncertainty about exactly how much a
-                trip will cost in transit fares or fuel expenses.
-              </p>
-            </div>
-            <div className="bg-indigo-50/50 p-6 rounded-2xl border border-indigo-100/50">
-              <AlertCircle className="text-rose-500 mb-4" size={28} />
-              <h3 className="font-bold text-[#0d1f5c] mb-2">Travel Anxiety</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Navigating long distances brings stress and confusion. Aila
-                replaces this uncertainty with real-time confidence.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-[#f8f9ff] py-24 px-6 lg:px-12 border-b border-indigo-50">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-16">
+          <div className="text-center mb-12 sm:mb-16">
+            <div className="inline-flex items-center gap-2 mb-4 bg-rose-50 border border-rose-100 rounded-full px-4 py-2">
+              <AlertCircle size={14} className="text-rose-500" />
+              <span className="text-[11px] font-extrabold text-rose-600 uppercase tracking-widest">
+                The Problem
+              </span>
+            </div>
             <h2
               style={{ fontFamily: '"Sora", sans-serif' }}
-              className="text-4xl md:text-5xl font-extrabold text-[#0d1f5c] tracking-tight leading-tight"
+              className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#0d1f5c] tracking-tight mb-5 leading-tight"
             >
-              Everything you need
-              <br />
-              for a smarter trip.
+              Traveling shouldn't be
+              <br className="hidden sm:block" />
+              stressful or confusing.
             </h2>
-            <p className="text-slate-500 font-medium text-base max-w-md leading-relaxed lg:text-right">
-              Unlike regular navigation apps that only give directions, Aila
-              shows different trip options and provides a real-time assistant.
+            <p className="text-base sm:text-lg text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">
+              Most commuters and drivers struggle with route uncertainty, fare
+              confusion, and the fear of getting lost in unfamiliar areas.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {FEATURES.map((f, i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {FEATURES.map((f) => (
               <div
                 key={f.name}
-                className="group relative rounded-3xl p-7 border border-slate-200 bg-white hover:border-indigo-200 hover:shadow-[0_16px_48px_rgba(99,102,241,0.10)] hover:-translate-y-1.5 transition-all duration-300 cursor-default overflow-hidden"
+                className="p-5 sm:p-6 rounded-3xl bg-[#f8f9ff] border border-indigo-50 hover:border-indigo-100 hover:shadow-[0_8px_30px_rgba(99,102,241,0.08)] transition-all duration-300 group"
               >
-                <span
-                  className="absolute -right-1 -bottom-3 text-[80px] font-extrabold select-none pointer-events-none text-[#0d1f5c] opacity-[0.035]"
-                  style={{ fontFamily: '"Sora", sans-serif' }}
-                >
-                  {i + 1}
-                </span>
                 <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300"
-                  style={{ background: f.accentBg, color: f.accent }}
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 duration-300"
+                  style={{ backgroundColor: f.accentBg, color: f.accent }}
                 >
                   {f.icon}
                 </div>
                 <h3
                   style={{ fontFamily: '"Sora", sans-serif' }}
-                  className="text-[15px] font-bold text-[#0d1f5c] mb-2.5 leading-snug"
+                  className="text-base font-bold text-[#0d1f5c] mb-2 leading-snug"
                 >
                   {f.name}
                 </h3>
@@ -468,49 +502,43 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="hiw" className="bg-white py-24 px-6 lg:px-12">
+      <section
+        id="hiw"
+        className="bg-[#f0f4ff] py-16 sm:py-24 px-5 sm:px-6 lg:px-12"
+      >
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-16">
+          <div className="text-center mb-12 sm:mb-16">
+            <div className="inline-flex items-center gap-2 mb-4 bg-indigo-50 border border-indigo-100 rounded-full px-4 py-2">
+              <Compass size={14} className="text-indigo-500" />
+              <span className="text-[11px] font-extrabold text-indigo-600 uppercase tracking-widest">
+                How It Works
+              </span>
+            </div>
             <h2
               style={{ fontFamily: '"Sora", sans-serif' }}
-              className="text-4xl md:text-5xl font-extrabold text-[#0d1f5c] tracking-tight leading-tight"
+              className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#0d1f5c] tracking-tight mb-5 leading-tight"
             >
-              How Aila guides
-              <br />
-              your journey.
+              Three steps to a
+              <br className="hidden sm:block" />
+              smarter journey.
             </h2>
-            <p className="text-slate-500 font-medium text-base max-w-sm leading-relaxed lg:text-right">
-              Just three steps to replace travel uncertainty with a confident,
-              fully tracked experience.
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 relative">
-            <div className="hidden md:block absolute top-[52px] left-[calc(33.33%+28px)] right-[calc(33.33%+28px)] h-px border-t-2 border-dashed border-indigo-200" />
-
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
             {HOW_STEPS.map((step, i) => (
               <div
-                key={i}
-                className="bg-[#f8f9ff] rounded-3xl p-8 relative border border-indigo-100/50 shadow-sm hover:shadow-md hover:border-indigo-200 hover:bg-white transition-all duration-300"
+                key={step.num}
+                className="relative bg-white rounded-[2rem] p-6 sm:p-8 border border-indigo-50 shadow-sm hover:shadow-[0_8px_30px_rgba(99,102,241,0.08)] transition-all"
               >
                 <div
-                  className={`w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-extrabold mb-7 ${
-                    i === 1
-                      ? "bg-[#0d1f5c] text-white shadow-lg shadow-[#0d1f5c]/15"
-                      : "bg-indigo-600 text-white shadow-lg shadow-indigo-600/15"
-                  }`}
                   style={{ fontFamily: '"Sora", sans-serif' }}
+                  className="text-[3rem] sm:text-[4rem] font-black text-indigo-50 leading-none mb-4 select-none"
                 >
                   {step.num}
                 </div>
-                {i < 2 && (
-                  <div className="hidden md:flex absolute top-[52px] right-[-22px] z-10 w-10 h-10 bg-white border border-indigo-100 rounded-full items-center justify-center shadow-sm">
-                    <ArrowRight size={16} className="text-indigo-400" />
-                  </div>
-                )}
                 <h3
                   style={{ fontFamily: '"Sora", sans-serif' }}
-                  className="text-xl font-bold text-[#0d1f5c] mb-3"
+                  className="text-lg font-bold text-[#0d1f5c] mb-3"
                 >
                   {step.title}
                 </h3>
@@ -523,18 +551,18 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-[#f0f4ff] py-24 px-6 lg:px-12">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-16 items-center">
-          <div className="lg:w-1/2">
+      <section className="bg-[#f0f4ff] py-16 sm:py-24 px-5 sm:px-6 lg:px-12">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-12 lg:gap-16 items-center">
+          <div className="w-full lg:w-1/2">
             <h2
               style={{ fontFamily: '"Sora", sans-serif' }}
-              className="text-4xl md:text-5xl font-extrabold text-[#0d1f5c] tracking-tight mb-5 leading-tight"
+              className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#0d1f5c] tracking-tight mb-5 leading-tight"
             >
               For both drivers
               <br />
               and commuters.
             </h2>
-            <p className="text-lg text-slate-500 font-medium mb-10 max-w-lg leading-relaxed">
+            <p className="text-base sm:text-lg text-slate-500 font-medium mb-8 sm:mb-10 max-w-lg leading-relaxed">
               No matter how you move, Aila is built to support your journey.
               Compare trip options based on what matters most to you today.
             </p>
@@ -543,13 +571,13 @@ export default function Home() {
               {JOURNEY_OPTIONS.map((mode) => (
                 <div
                   key={mode.name}
-                  className="flex items-start gap-5 p-6 rounded-3xl bg-white border border-indigo-100/60 hover:border-indigo-200 hover:shadow-[0_8px_32px_rgba(99,102,241,0.10)] hover:-translate-y-0.5 transition-all duration-300"
+                  className="flex items-start gap-4 sm:gap-5 p-5 sm:p-6 rounded-3xl bg-white border border-indigo-100/60 hover:border-indigo-200 hover:shadow-[0_8px_32px_rgba(99,102,241,0.10)] hover:-translate-y-0.5 transition-all duration-300"
                 >
                   <div className="w-12 h-12 rounded-2xl bg-[#f8f9ff] border border-indigo-100 flex items-center justify-center text-indigo-600 flex-shrink-0 shadow-sm">
                     {mode.icon}
                   </div>
                   <div>
-                    <div className="flex items-center gap-3 mb-1.5">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1.5">
                       <h3
                         style={{ fontFamily: '"Sora", sans-serif' }}
                         className="text-base font-bold text-[#0d1f5c]"
@@ -571,7 +599,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="lg:w-1/2 w-full relative">
+          <div className="w-full lg:w-1/2 relative">
             <div
               className="absolute -inset-4 rounded-[3rem] bg-indigo-100/40 pointer-events-none"
               style={{ filter: "blur(28px)" }}
@@ -587,12 +615,12 @@ export default function Home() {
 
       <section
         id="about"
-        className="bg-[#0d1f5c] py-28 px-6 lg:px-12 relative overflow-hidden"
+        className="bg-[#0d1f5c] py-16 sm:py-28 px-5 sm:px-6 lg:px-12 relative overflow-hidden"
       >
         <div className="absolute w-[600px] h-[600px] rounded-full bg-indigo-500/8 right-[-200px] bottom-[-300px] pointer-events-none" />
         <div className="absolute top-0 left-0 right-0 h-px bg-white/5" />
 
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
           <div>
             <div className="flex items-center gap-2.5 mb-6">
               <CheckCircle2
@@ -610,19 +638,19 @@ export default function Home() {
             </div>
             <h2
               style={{ fontFamily: '"Sora", sans-serif' }}
-              className="text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight mb-6"
+              className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight mb-6"
             >
               A wider, smarter
               <br className="hidden md:block" />
               view of your trips.
             </h2>
-            <p className="text-indigo-100/75 text-[16px] leading-[1.82] font-medium mb-5">
+            <p className="text-indigo-100/75 text-[15px] sm:text-[16px] leading-[1.82] font-medium mb-5">
               The name Aila comes from Agila (the Philippine Eagle). Just as an
               eagle possesses sharp vision to see the entire landscape, Aila
               gives you a clear bird's-eye view of your entire travel
               experience.
             </p>
-            <p className="text-indigo-100/75 text-[16px] leading-[1.82] font-medium mb-10">
+            <p className="text-indigo-100/75 text-[15px] sm:text-[16px] leading-[1.82] font-medium mb-10">
               One simple platform that combines routing, tracking, cost
               computations, and real-time support to help you make smarter and
               more confident decisions.
@@ -640,15 +668,15 @@ export default function Home() {
             {STATS.map((s) => (
               <div
                 key={s.label}
-                className="bg-white/5 border border-white/10 rounded-3xl p-7 hover:bg-white/10 transition-colors duration-200"
+                className="bg-white/5 border border-white/10 rounded-3xl p-5 sm:p-7 hover:bg-white/10 transition-colors duration-200"
               >
                 <div
                   style={{ fontFamily: '"Sora", sans-serif' }}
-                  className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-2"
+                  className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-2"
                 >
                   {s.num}
                 </div>
-                <div className="text-sm text-indigo-200/80 font-semibold leading-snug">
+                <div className="text-xs sm:text-sm text-indigo-200/80 font-semibold leading-snug">
                   {s.label}
                 </div>
               </div>
@@ -657,7 +685,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="bg-[#040a1f] px-6 lg:px-12 py-12 border-t border-white/5">
+      <footer className="bg-[#040a1f] px-5 sm:px-6 lg:px-12 py-12 border-t border-white/5">
         <div className="max-w-7xl mx-auto flex flex-col items-center justify-center text-center">
           <div className="flex items-center gap-3 mb-6">
             <img
@@ -672,7 +700,7 @@ export default function Home() {
               Aila.
             </span>
           </div>
-          <div className="flex items-center gap-6 mb-8">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-8">
             <a
               href="#problem"
               className="text-sm text-white/50 font-semibold hover:text-white transition-colors"
@@ -694,7 +722,7 @@ export default function Home() {
           </div>
           <div className="w-16 h-px bg-white/10 mb-8" />
           <p className="text-xs text-white/40 font-medium mb-2">
-            © 2026 Aila. Your AI Trip Assistant.
+            © 2026 Aila. Your Trip Assistant.
           </p>
           <p className="text-xs text-white/30 font-medium">
             Developed by{" "}

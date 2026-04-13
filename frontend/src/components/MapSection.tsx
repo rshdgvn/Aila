@@ -43,7 +43,6 @@ function MapFitter({ routeCoords }: { routeCoords: [number, number][] }) {
   const map = useMap();
   useEffect(() => {
     if (routeCoords.length > 0) {
-      // Dynamic padding: smaller padding on mobile to maximize map view
       const paddingParams: [number, number] =
         window.innerWidth < 768 ? [30, 30] : [60, 60];
       map.fitBounds(latLngBounds(routeCoords), { padding: paddingParams });
@@ -68,9 +67,8 @@ export default function MapSection({
 
   return (
     <div className="flex-1 relative z-0 h-full w-full bg-[#e2e8f0]">
-      {/* Toast Notification if user is currently dropping a pin */}
       {pinMode && (
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[400] bg-[#0d1f5c] text-white px-6 py-3 rounded-full shadow-2xl font-bold text-[12px] uppercase tracking-widest flex items-center gap-2 border border-indigo-400/30 animate-bounce">
+        <div className="absolute top-4 sm:top-6 left-1/2 -translate-x-1/2 z-[400] bg-[#0d1f5c] text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-2xl font-bold text-[11px] sm:text-[12px] uppercase tracking-widest flex items-center gap-2 border border-indigo-400/30 animate-bounce whitespace-nowrap">
           <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></div>
           Tap anywhere to set {pinMode}
         </div>
@@ -128,7 +126,6 @@ export default function MapSection({
           activeRoute.legs.map((leg: any, i: number) => {
             if (!leg.path || leg.path.length === 0) return null;
             const isWalking = leg.type === "WALKING";
-            // We force #4f46e5 (Aila Indigo) instead of generic blue
             const lineColor = isWalking
               ? "#94a3b8"
               : mode === "transit"

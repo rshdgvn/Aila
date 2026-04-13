@@ -106,6 +106,14 @@ export default function NewTravel() {
       return;
     }
 
+    if (routesData && routesData.routes?.length === 0) {
+      setAilaMascot("/aila-confused.png");
+      setAilaMessages([
+        "Oops! I couldn't find a route for this trip. Try adjusting your locations or switching your travel mode!",
+      ]);
+      return;
+    }
+
     setAilaMascot("/aila-relax.png");
     if (pinMode) {
       setAilaMessages([`Tap anywhere on the map to drop your ${pinMode} pin!`]);
@@ -116,7 +124,7 @@ export default function NewTravel() {
         "Awesome destination! Now, where are you starting from?",
       ]);
     } else {
-      setAilaMessages(["Got it! Now, let's set your destination."]);
+      setAilaMessages(["Got it! Now, let's hit that search button."]);
     }
   }, [
     loading,
@@ -194,6 +202,7 @@ export default function NewTravel() {
       if (parsedRoutes.length > 0) setSelectedRouteIdx(0);
     } catch (err) {
       console.error(err);
+      setRoutesData({ routes: [] });
     } finally {
       setLoading(false);
     }
@@ -263,7 +272,7 @@ export default function NewTravel() {
   };
 
   const activeRoute =
-    selectedRouteIdx !== null && routesData
+    selectedRouteIdx !== null && routesData && routesData.routes.length > 0
       ? routesData.routes[selectedRouteIdx]
       : null;
 
@@ -272,48 +281,48 @@ export default function NewTravel() {
       className="h-screen bg-[#f0f4ff] flex flex-col md:flex-row text-[#0d1f5c] overflow-hidden"
       style={{ fontFamily: '"Raleway", sans-serif' }}
     >
-      <div className="w-full md:w-[420px] bg-[#f8f9ff] flex flex-col z-20 shadow-2xl shrink-0 h-full overflow-hidden border-r border-indigo-100">
-        <header className="px-6 py-5 flex items-center gap-4 bg-white shadow-sm shrink-0 z-30">
+      <div className="w-full md:w-[420px] bg-[#f8f9ff] flex flex-col z-20 shadow-2xl shrink-0 h-auto md:h-full overflow-hidden border-r border-indigo-100">
+        <header className="px-5 sm:px-6 py-4 sm:py-5 flex items-center gap-3 sm:gap-4 bg-white shadow-sm shrink-0 z-30">
           <button
             onClick={() => navigate("/dashboard")}
-            className="w-10 h-10 rounded-xl bg-[#f0f4ff] flex items-center justify-center text-[#0d1f5c] hover:bg-indigo-100 transition-all"
+            className="w-10 h-10 rounded-xl bg-[#f0f4ff] flex items-center justify-center text-[#0d1f5c] hover:bg-indigo-100 transition-all shrink-0"
           >
             <ArrowLeft size={20} strokeWidth={2.5} />
           </button>
           <div
             style={{ fontFamily: '"Sora", sans-serif' }}
-            className="font-extrabold text-[20px] tracking-tight text-[#0d1f5c]"
+            className="font-extrabold text-[18px] sm:text-[20px] tracking-tight text-[#0d1f5c]"
           >
             Plan Your Trip
           </div>
         </header>
 
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="px-6 pt-5 pb-2 shrink-0 flex items-end gap-1">
-            <div className="w-32 h-32 md:w-36 md:h-36 mt-2 shrink-0 relative flex items-end">
+          <div className="px-5 sm:px-6 pt-4 sm:pt-5 pb-2 shrink-0 flex items-end gap-1">
+            <div className="w-24 h-24 md:w-28 md:h-28 shrink-0 relative flex items-end">
               <img
                 src={ailaMascot}
                 alt="Aila"
-                className="w-full h-full object-contain relative z-10 drop-shadow-[0_10px_20px_rgba(13,31,92,0.15)] scale-[1.15] origin-bottom"
+                className="w-full h-full object-contain relative z-10 drop-shadow-[0_10px_20px_rgba(13,31,92,0.15)] scale-[1.15] origin-bottom transition-all duration-300"
               />
             </div>
 
-            <div className="flex-1 mb-8 relative">
+            <div className="flex-1 mb-8 relative min-w-0">
               <div className="absolute -left-2 bottom-4 w-4 h-4 bg-white border-l border-b border-indigo-100 transform rotate-45 z-0"></div>
-              <div className="relative bg-white border border-indigo-100 shadow-[0_10px_30px_rgba(13,31,92,0.08)] rounded-2xl rounded-bl-none p-4 z-10">
-                <p className="text-[#0d1f5c] font-bold text-[13px] leading-snug">
+              <div className="relative bg-white border border-indigo-100 shadow-[0_10px_30px_rgba(13,31,92,0.08)] rounded-2xl rounded-bl-none p-3 sm:p-4 z-10">
+                <p className="text-[#0d1f5c] font-bold text-[12px] sm:text-[13px] leading-snug">
                   {ailaMessages[0]}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="flex-1 px-6 pb-6 pt-2 flex flex-col gap-4 overflow-hidden">
+          <div className="flex-1 px-5 sm:px-6 pb-5 sm:pb-6 pt-2 flex flex-col gap-3 sm:gap-4 overflow-y-auto no-scrollbar">
             <div className="bg-white p-4 rounded-3xl shadow-[0_4px_20px_rgba(13,31,92,0.04)] border border-indigo-50 space-y-3 relative">
               <div className="absolute left-[30px] top-10 bottom-10 w-[2px] bg-indigo-50 z-0"></div>
 
-              <div className="flex items-center gap-3 relative z-10">
-                <div className="relative flex-1">
+              <div className="flex items-center gap-2 sm:gap-3 relative z-10">
+                <div className="relative flex-1 min-w-0">
                   <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                     <div className="w-2.5 h-2.5 rounded-full bg-indigo-600 shadow-[0_0_0_4px_white]"></div>
                   </div>
@@ -339,14 +348,14 @@ export default function NewTravel() {
                   onClick={() =>
                     setPinMode(pinMode === "origin" ? null : "origin")
                   }
-                  className={`w-12 h-12 shrink-0 rounded-2xl border-2 flex items-center justify-center transition-all ${pinMode === "origin" ? "bg-[#0d1f5c] text-white border-[#0d1f5c]" : "bg-white border-indigo-50 text-indigo-400 hover:text-indigo-600 shadow-sm"}`}
+                  className={`w-11 h-11 shrink-0 rounded-2xl border-2 flex items-center justify-center transition-all ${pinMode === "origin" ? "bg-[#0d1f5c] text-white border-[#0d1f5c]" : "bg-white border-indigo-50 text-indigo-400 hover:text-indigo-600 shadow-sm"}`}
                 >
-                  <MapPin size={20} />
+                  <MapPin size={18} />
                 </button>
               </div>
 
-              <div className="flex items-center gap-3 relative z-10">
-                <div className="relative flex-1">
+              <div className="flex items-center gap-2 sm:gap-3 relative z-10">
+                <div className="relative flex-1 min-w-0">
                   <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                     <div className="w-2.5 h-2.5 rounded-full bg-[#0d1f5c] shadow-[0_0_0_4px_white]"></div>
                   </div>
@@ -366,9 +375,9 @@ export default function NewTravel() {
                   onClick={() =>
                     setPinMode(pinMode === "destination" ? null : "destination")
                   }
-                  className={`w-12 h-12 shrink-0 rounded-2xl border-2 flex items-center justify-center transition-all ${pinMode === "destination" ? "bg-[#0d1f5c] text-white border-[#0d1f5c]" : "bg-white border-indigo-50 text-indigo-400 hover:text-[#0d1f5c] shadow-sm"}`}
+                  className={`w-11 h-11 shrink-0 rounded-2xl border-2 flex items-center justify-center transition-all ${pinMode === "destination" ? "bg-[#0d1f5c] text-white border-[#0d1f5c]" : "bg-white border-indigo-50 text-indigo-400 hover:text-[#0d1f5c] shadow-sm"}`}
                 >
-                  <LocateFixed size={20} />
+                  <LocateFixed size={18} />
                 </button>
               </div>
             </div>
@@ -411,12 +420,12 @@ export default function NewTravel() {
               </div>
             )}
 
-            <div className="flex-1 min-h-[10px]"></div>
+            <div className="flex-1 min-h-[8px]"></div>
 
             <button
               onClick={handleSearch}
               disabled={loading || !originStr || !destStr}
-              className="w-full py-4.5 bg-indigo-600 text-white text-[14px] font-black uppercase tracking-widest rounded-2xl hover:bg-indigo-700 shadow-[0_10px_25px_rgba(79,70,229,0.3)] transition-all flex items-center justify-center gap-3 active:scale-[0.98] shrink-0 disabled:opacity-70 disabled:hover:bg-indigo-500"
+              className="w-full py-4 bg-indigo-600 text-white text-[14px] font-black uppercase tracking-widest rounded-2xl hover:bg-indigo-700 shadow-[0_10px_25px_rgba(79,70,229,0.3)] transition-all flex items-center justify-center gap-3 active:scale-[0.98] shrink-0 disabled:opacity-70 disabled:hover:bg-indigo-500"
             >
               {loading ? (
                 <Loader2 className="animate-spin" size={20} />
@@ -443,7 +452,7 @@ export default function NewTravel() {
         />
       </div>
 
-      {routesData && (
+      {routesData && routesData.routes?.length > 0 && (
         <RouteOptions
           routesData={routesData}
           selectedRouteIdx={selectedRouteIdx}

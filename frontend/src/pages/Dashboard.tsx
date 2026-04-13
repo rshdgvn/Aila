@@ -98,7 +98,7 @@ export default function Dashboard() {
       />
 
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-        <div className="md:hidden flex items-center justify-between bg-white/80 backdrop-blur-md px-6 py-4 border-b border-indigo-100 z-30 sticky top-0">
+        <div className="md:hidden flex items-center justify-between bg-white/80 backdrop-blur-md px-5 py-4 border-b border-indigo-100 z-30 sticky top-0">
           <span
             style={{ fontFamily: '"Sora", sans-serif' }}
             className="text-xl font-black text-[#0d1f5c]"
@@ -114,15 +114,15 @@ export default function Dashboard() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8 no-scrollbar relative z-10">
-          <div className="max-w-6xl mx-auto space-y-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6">
               <div>
                 <p className="text-xs font-bold text-indigo-500 uppercase flex items-center gap-2 mb-2 tracking-wider">
                   <Calendar size={14} /> {currentDate}
                 </p>
                 <h1
                   style={{ fontFamily: '"Sora", sans-serif' }}
-                  className="text-4xl md:text-5xl font-black text-[#0d1f5c] leading-tight tracking-tight"
+                  className="text-3xl sm:text-4xl md:text-5xl font-black text-[#0d1f5c] leading-tight tracking-tight"
                 >
                   {greeting},<br />
                   {user?.firstName}!
@@ -130,7 +130,7 @@ export default function Dashboard() {
               </div>
               <button
                 onClick={() => navigate("/new-travel")}
-                className="group flex items-center justify-center gap-2 bg-[#0d1f5c] text-white px-8 py-4 rounded-2xl font-bold hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-900/20 transition-all active:scale-95"
+                className="group flex items-center justify-center gap-2 bg-[#0d1f5c] text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-bold hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-900/20 transition-all active:scale-95 w-full sm:w-auto"
               >
                 <Plus
                   size={20}
@@ -140,11 +140,9 @@ export default function Dashboard() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Aila's Message Section */}
-              <div className="lg:col-span-2 bg-white rounded-[2rem] p-6 md:p-8 border border-indigo-50 shadow-xl shadow-indigo-100/40 flex items-center gap-4 md:gap-8 min-h-[160px]">
-                {/* Mascot - No longer in a circle, bigger, and centered vertically */}
-                <div className="w-24 h-24 md:w-36 md:h-36 shrink-0 relative flex items-center justify-center">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+              <div className="lg:col-span-2 bg-white rounded-[2rem] p-5 sm:p-6 md:p-8 border border-indigo-50 shadow-xl shadow-indigo-100/40 flex items-center gap-4 sm:gap-6 md:gap-8 min-h-[140px] sm:min-h-[160px]">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-36 md:h-36 shrink-0 relative flex items-center justify-center">
                   <img
                     src="/aila-relax.png"
                     alt="Aila Mascot"
@@ -152,18 +150,17 @@ export default function Dashboard() {
                   />
                 </div>
 
-                {/* Message Bubble - Right side */}
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="inline-flex items-center gap-2 mb-2 ml-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                     <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
                       Aila's Message
                     </span>
                   </div>
-                  <div className="bg-[#f8f9ff] border border-indigo-50 rounded-[20px] rounded-tl-sm p-4 md:p-5 shadow-sm">
+                  <div className="bg-[#f8f9ff] border border-indigo-50 rounded-[20px] rounded-tl-sm p-3 sm:p-4 md:p-5 shadow-sm">
                     <p
                       style={{ fontFamily: '"Sora", sans-serif' }}
-                      className="text-[14px] md:text-[15px] font-bold text-[#0d1f5c] leading-relaxed"
+                      className="text-[13px] sm:text-[14px] md:text-[15px] font-bold text-[#0d1f5c] leading-relaxed"
                     >
                       {getOverviewText()}
                     </p>
@@ -171,8 +168,8 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-[2rem] p-6 border border-indigo-50 flex flex-col justify-center gap-4 shadow-xl shadow-indigo-100/40">
-                <div className="flex justify-between items-center bg-gradient-to-br from-[#f8f9ff] to-[#f0f4ff] p-5 rounded-[1.5rem] border border-indigo-100/50 hover:border-indigo-200 transition-colors">
+              <div className="bg-white rounded-[2rem] p-5 sm:p-6 border border-indigo-50 flex flex-col justify-center gap-4 shadow-xl shadow-indigo-100/40">
+                <div className="flex justify-between items-center bg-gradient-to-br from-[#f8f9ff] to-[#f0f4ff] p-4 sm:p-5 rounded-[1.5rem] border border-indigo-100/50 hover:border-indigo-200 transition-colors">
                   <div>
                     <p className="text-[10px] font-extrabold text-indigo-400 uppercase tracking-widest mb-1">
                       Total Distance
@@ -191,7 +188,7 @@ export default function Dashboard() {
                     <Route size={24} />
                   </div>
                 </div>
-                <div className="flex justify-between items-center bg-gradient-to-br from-[#f8f9ff] to-[#f0f4ff] p-5 rounded-[1.5rem] border border-indigo-100/50 hover:border-indigo-200 transition-colors">
+                <div className="flex justify-between items-center bg-gradient-to-br from-[#f8f9ff] to-[#f0f4ff] p-4 sm:p-5 rounded-[1.5rem] border border-indigo-100/50 hover:border-indigo-200 transition-colors">
                   <div>
                     <p className="text-[10px] font-extrabold text-emerald-400 uppercase tracking-widest mb-1">
                       Trips Logged
@@ -210,11 +207,11 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="bg-white rounded-[2rem] p-6 md:p-8 border border-indigo-50 flex flex-col h-[450px] shadow-xl shadow-indigo-100/40">
-              <div className="flex justify-between items-center mb-6 shrink-0">
+            <div className="bg-white rounded-[2rem] p-5 sm:p-6 md:p-8 border border-indigo-50 flex flex-col h-[400px] sm:h-[450px] shadow-xl shadow-indigo-100/40">
+              <div className="flex justify-between items-center mb-5 sm:mb-6 shrink-0">
                 <h3
                   style={{ fontFamily: '"Sora", sans-serif' }}
-                  className="text-xl font-black text-[#0d1f5c] flex items-center gap-3"
+                  className="text-lg sm:text-xl font-black text-[#0d1f5c] flex items-center gap-3"
                 >
                   <div className="p-2 bg-indigo-50 rounded-lg text-indigo-500">
                     <Activity size={20} />
@@ -223,7 +220,7 @@ export default function Dashboard() {
                 </h3>
               </div>
 
-              <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto pr-1 sm:pr-2 space-y-3 sm:space-y-4 custom-scrollbar">
                 {trips.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center opacity-60">
                     <MapIcon size={48} className="text-indigo-200 mb-4" />
@@ -238,14 +235,14 @@ export default function Dashboard() {
                       onClick={() =>
                         navigate(`/trip/${trip.id}`, { state: { trip } })
                       }
-                      className="cursor-pointer group flex items-center justify-between p-4 bg-white hover:bg-[#f8f9ff] rounded-[1.5rem] border-2 border-slate-50 hover:border-indigo-100 shadow-sm hover:shadow-md transition-all duration-300"
+                      className="cursor-pointer group flex items-center justify-between p-3 sm:p-4 bg-white hover:bg-[#f8f9ff] rounded-[1.5rem] border-2 border-slate-50 hover:border-indigo-100 shadow-sm hover:shadow-md transition-all duration-300"
                     >
-                      <div className="flex items-center gap-5 min-w-0">
-                        <div className="w-12 h-12 rounded-full bg-indigo-50 group-hover:bg-[#0d1f5c] group-hover:text-white transition-colors flex items-center justify-center text-[#0d1f5c] shrink-0">
+                      <div className="flex items-center gap-3 sm:gap-5 min-w-0">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-indigo-50 group-hover:bg-[#0d1f5c] group-hover:text-white transition-colors flex items-center justify-center text-[#0d1f5c] shrink-0">
                           {trip.mode.includes("transit") ? (
-                            <Bus size={20} />
+                            <Bus size={18} />
                           ) : (
-                            <Car size={20} />
+                            <Car size={18} />
                           )}
                         </div>
                         <div className="min-w-0">
@@ -254,25 +251,25 @@ export default function Dashboard() {
                               trip.created_at || "",
                             ).toLocaleDateString()}
                           </p>
-                          <div className="flex items-center gap-2 text-base font-bold text-[#0d1f5c] truncate">
-                            <span className="truncate max-w-[120px] sm:max-w-[180px]">
+                          <div className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base font-bold text-[#0d1f5c]">
+                            <span className="truncate max-w-[80px] sm:max-w-[120px] md:max-w-[180px]">
                               {formatLocationName(trip.origin)}
                             </span>
                             <ChevronRight
-                              size={16}
+                              size={14}
                               className="text-indigo-300 shrink-0"
                             />
-                            <span className="truncate max-w-[120px] sm:max-w-[180px]">
+                            <span className="truncate max-w-[80px] sm:max-w-[120px] md:max-w-[180px]">
                               {formatLocationName(trip.destination)}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-6 shrink-0">
-                        <div className="text-right hidden sm:block">
+                      <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+                        <div className="text-right hidden xs:block sm:block">
                           <p
                             style={{ fontFamily: '"Sora", sans-serif' }}
-                            className="text-base font-black text-[#0d1f5c]"
+                            className="text-sm sm:text-base font-black text-[#0d1f5c]"
                           >
                             {trip.distance_km}
                             <span className="text-[10px] text-slate-400 font-bold ml-1">
@@ -281,7 +278,7 @@ export default function Dashboard() {
                           </p>
                           <p
                             style={{ fontFamily: '"Sora", sans-serif' }}
-                            className="text-base font-black text-[#0d1f5c]"
+                            className="text-sm sm:text-base font-black text-[#0d1f5c]"
                           >
                             {trip.duration_mins}
                             <span className="text-[10px] text-slate-400 font-bold ml-1">
@@ -301,7 +298,7 @@ export default function Dashboard() {
 
       {selectedTrip && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0d1f5c]/95 backdrop-blur-xl p-4 transition-opacity duration-300">
-          <div className="relative w-full max-w-[360px] h-[640px] bg-[#0a0f1c] rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.8)] flex flex-col p-6 text-white border-[4px] border-[#1e293b] transform scale-100 animate-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-[340px] sm:max-w-[360px] h-[580px] sm:h-[640px] bg-[#0a0f1c] rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.8)] flex flex-col p-5 sm:p-6 text-white border-[4px] border-[#1e293b] transform scale-100 animate-in zoom-in-95 duration-200">
             <button
               onClick={() => setSelectedTrip(null)}
               className="absolute top-5 right-5 p-2 bg-white/10 backdrop-blur-md rounded-full hover:bg-white/20 transition-colors z-30"
@@ -450,11 +447,11 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-4 w-full max-w-[360px] px-6">
-            <button className="flex-1 flex items-center justify-center gap-2 bg-[#f43f5e] text-white py-4 rounded-2xl font-black shadow-[0_0_20px_rgba(244,63,94,0.4)] hover:bg-[#e11d48] active:scale-95 transition-all">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 sm:gap-4 w-full max-w-[340px] sm:max-w-[360px] px-4 sm:px-6">
+            <button className="flex-1 flex items-center justify-center gap-2 bg-[#f43f5e] text-white py-4 rounded-2xl font-black shadow-[0_0_20px_rgba(244,63,94,0.4)] hover:bg-[#e11d48] active:scale-95 transition-all text-sm sm:text-base">
               <Share2 size={18} /> Share Activity
             </button>
-            <button className="flex items-center justify-center w-14 h-14 shrink-0 bg-[#1e293b]/80 backdrop-blur-xl text-white rounded-2xl border border-slate-600 hover:bg-[#334155] active:scale-95 transition-all shadow-xl">
+            <button className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 shrink-0 bg-[#1e293b]/80 backdrop-blur-xl text-white rounded-2xl border border-slate-600 hover:bg-[#334155] active:scale-95 transition-all shadow-xl">
               <Download size={22} />
             </button>
           </div>

@@ -419,17 +419,17 @@ export default function ActiveJourney() {
           )}
 
           {decodedLegs.map((leg: any, i: number) => {
-            const isPast = i < currentStepIdx;
-            const isCurrent = i === currentStepIdx;
+            const isPassedOrCurrent = i <= currentStepIdx;
             const isFuture = i > currentStepIdx;
+            const isActiveStep = i === currentStepIdx;
 
             return (
               <Polyline
                 key={`${i}-${currentStepIdx}`}
                 positions={leg.path}
                 pathOptions={{
-                  color: isCurrent ? "#4f46e5" : isPast ? "#0d1f5c" : "#cbd5e1",
-                  weight: isCurrent ? 8 : 5,
+                  color: isActiveStep ? "#4f46e5" : isPassedOrCurrent ? "#818cf8" : "#cbd5e1",
+                  weight: isActiveStep ? 8 : 5,
                   dashArray: isFuture ? "10, 12" : undefined,
                   lineCap: "round",
                   lineJoin: "round"
@@ -480,7 +480,14 @@ export default function ActiveJourney() {
         </header>
 
         <div className="flex-1 overflow-y-auto p-7 bg-white relative no-scrollbar">
-          <div className="flex flex-col">
+          <div className="absolute left-[45px] top-8 bottom-12 w-[2px] bg-slate-100 z-0"></div>
+          
+          <div 
+             className="absolute left-[45px] top-8 w-[2px] bg-indigo-500 z-0 transition-all duration-700"
+             style={{ height: `${Math.min(100, (currentStepIdx / Math.max(1, decodedLegs.length - 1)) * 100)}%` }}
+          ></div>
+
+          <div className="space-y-6 relative z-10 pb-10">
             {decodedLegs.map((leg: any, idx: number) => {
               const isPast = idx < currentStepIdx;
               const isCurrent = idx === currentStepIdx;
@@ -493,9 +500,9 @@ export default function ActiveJourney() {
                   key={idx}
                   className={`flex gap-5 transition-all duration-300 ${isPast ? "opacity-60" : "opacity-100"}`}
                 >
-                  <div className="shrink-0 flex flex-col items-center w-9">
+                  <div className="shrink-0 flex flex-col items-center pt-1.5 relative">
                     <div
-                      className={`w-9 h-9 shrink-0 rounded-full border-2 flex items-center justify-center relative z-10 transition-colors duration-300 ${
+                      className={`w-9 h-9 rounded-full border-2 flex items-center justify-center relative z-10 transition-colors duration-300 ${
                         isCurrent
                           ? "bg-[#0d1f5c] border-[#0d1f5c] text-white shadow-md"
                           : isPast
@@ -511,69 +518,64 @@ export default function ActiveJourney() {
                         <Car size={16} />
                       )}
                     </div>
-                    <div className={`w-[2px] flex-1 my-1 transition-colors duration-300 ${isPast ? 'bg-indigo-500' : 'bg-slate-100'}`}></div>
                   </div>
                   
                   <div
-                    className={`flex-1 pb-6 transition-all duration-300`}
-                  >
-                    <div className={`p-4 rounded-2xl ${
+                    className={`flex-1 p-4 rounded-2xl transition-all duration-300 ${
                       isCurrent 
                         ? "bg-[#f8f9ff] border border-indigo-100 shadow-sm" 
                         : isPast
                           ? "bg-transparent border border-transparent"
                           : "bg-white border border-slate-100"
-                    }`}>
-                      {isCurrent && (
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-100 px-2 py-1 rounded-md">
-                            Current Step
-                          </span>
+                    }`}
+                  >
+                    {isCurrent && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-100 px-2 py-1 rounded-md">
+                          Current Step
+                        </span>
+                      </div>
+                    )}
+                    
+                    <p
+                      className={`text-[14px] font-bold leading-relaxed ${isCurrent ? "text-[#0d1f5c]" : "text-slate-600"}`}
+                      dangerouslySetInnerHTML={{ __html: leg.instructions || 'Proceed to route' }}
+                    />
+
+                    <div className="flex items-center gap-4 mt-3 flex-wrap">
+                      {distStr && (
+                         <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-slate-500 tracking-wide">
+                           <MapPin size={12} className="text-indigo-400" /> {distStr}
+                         </div>
+                      )}
+                      {durStr && (
+                         <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-slate-500 tracking-wide">
+                           <Clock size={12} className="text-indigo-400" /> {durStr}
+                         </div>
+                      )}
+                      {leg.estimated_fare > 0 && (
+                        <div className="inline-block px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[11px] font-black rounded border border-indigo-100 shadow-sm">
+                          ₱{leg.estimated_fare.toFixed(2)}
                         </div>
                       )}
-                      
-                      <p
-                        className={`text-[14px] font-bold leading-relaxed ${isCurrent ? "text-[#0d1f5c]" : "text-slate-600"}`}
-                        dangerouslySetInnerHTML={{ __html: leg.instructions || 'Proceed to route' }}
-                      />
-
-                      <div className="flex items-center gap-4 mt-3 flex-wrap">
-                        {distStr && (
-                           <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-slate-500 tracking-wide">
-                             <MapPin size={12} className="text-indigo-400" /> {distStr}
-                           </div>
-                        )}
-                        {durStr && (
-                           <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-slate-500 tracking-wide">
-                             <Clock size={12} className="text-indigo-400" /> {durStr}
-                           </div>
-                        )}
-                        {leg.estimated_fare > 0 && (
-                          <div className="inline-block px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[11px] font-black rounded border border-indigo-100 shadow-sm">
-                            ₱{leg.estimated_fare.toFixed(2)}
-                          </div>
-                        )}
-                      </div>
                     </div>
                   </div>
                 </div>
               );
             })}
 
-            <div className="flex gap-5 opacity-80">
-                <div className="shrink-0 flex flex-col items-center w-9">
-                   <div className="w-9 h-9 flex items-center justify-center relative z-10">
-                      <div className="w-6 h-6 rounded-full bg-[#0d1f5c] border-[3px] border-white shadow-sm flex items-center justify-center">
-                         <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-                      </div>
+            <div className="flex gap-5 pt-2 opacity-80">
+                <div className="shrink-0 flex flex-col items-center relative pl-1.5">
+                   <div className="w-6 h-6 rounded-full bg-[#0d1f5c] border-[3px] border-white shadow-sm z-10 flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
                    </div>
                 </div>
-                <div className="flex-1 py-1.5">
+                <div className="flex-1 pt-0.5">
                    <p className="text-[14px] font-extrabold text-[#0d1f5c]">Destination Reached</p>
                 </div>
             </div>
-          </div>
 
+          </div>
         </div>
 
         <div className="p-6 bg-white border-t border-indigo-50 shrink-0 space-y-3 z-20">
