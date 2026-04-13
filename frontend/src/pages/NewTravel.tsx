@@ -9,7 +9,7 @@ import {
   Bus,
   UserSquare2,
   Loader2,
-  Sparkles,
+  Search,
   Navigation,
 } from "lucide-react";
 import { routesApi, tripsApi } from "../config/api";
@@ -88,7 +88,7 @@ export default function NewTravel() {
     if (loading) {
       setAilaMascot("/aila-reading-map.png");
       setAilaMessages([
-        "Give me a second, I'm scanning the map and checking the latest LFTRB fares...",
+        "Scanning the map and checking the latest LTFRB fares...",
       ]);
       return;
     }
@@ -102,8 +102,6 @@ export default function NewTravel() {
         msg += "This one is the fastest route to beat the rush. ";
       else if (selected?.insights?.includes("Cheapest"))
         msg += "This path will save you the most money. ";
-      else if (selected?.insights?.includes("Most Comfortable"))
-        msg += "This is the most comfortable and direct path I could find. ";
       else msg += "Here is a solid route for your trip. ";
 
       if (mode === "transit" && selected.transfer_count > 0) {
@@ -146,7 +144,6 @@ export default function NewTravel() {
     setPinMode(null);
   };
 
-  // Get Current Geolocation Feature
   const handleCurrentLocation = (type: "origin" | "destination") => {
     if (!navigator.geolocation) {
       alert("Geolocation is not supported by your browser");
@@ -184,8 +181,6 @@ export default function NewTravel() {
 
     try {
       const data = await routesApi.getRoutes(o, d, mode, passengerType);
-
-      // Filter out duplicate routes
       const rawRoutes = data.routes || [];
       const uniqueRoutes = rawRoutes.filter(
         (route: any, index: number, self: any[]) =>
@@ -217,33 +212,34 @@ export default function NewTravel() {
     }
   };
 
+  const createTripPayload = (route: any, status: string) => {
+    const fullPath = route.legs
+      ? route.legs.flatMap((leg: any) => leg.path || [])
+      : [];
+    const fullPolyline = fullPath.length > 0 ? polyline.encode(fullPath) : null;
+
+    return {
+      origin: originStr,
+      destination: destStr,
+      mode: mode,
+      distance_km: Number(route.total_distance_km.toFixed(2)),
+      duration_mins: Math.round(route.total_duration_mins),
+      total_fare: route.grand_total_fare || 0,
+      status,
+      origin_lat: originCoords ? originCoords[0] : null,
+      origin_lng: originCoords ? originCoords[1] : null,
+      dest_lat: destCoords ? destCoords[0] : null,
+      dest_lng: destCoords ? destCoords[1] : null,
+      route_polyline: fullPolyline,
+    };
+  };
+
   const handleStartJourney = async () => {
     if (selectedRouteIdx === null || !routesData) return;
     const route = routesData.routes[selectedRouteIdx];
     setSaving(true);
     try {
-      const fullPath = route.legs
-        ? route.legs.flatMap((leg: any) => leg.path || [])
-        : [];
-      const fullPolyline =
-        fullPath.length > 0 ? polyline.encode(fullPath) : null;
-
-      const res = await tripsApi.create({
-        origin: originStr,
-        destination: destStr,
-        mode: mode,
-        distance_km: Number(route.total_distance_km.toFixed(2)),
-        duration_mins: Math.round(route.total_duration_mins),
-        total_fare: route.grand_total_fare || 0,
-        status: "active",
-
-        origin_lat: originCoords ? originCoords[0] : null,
-        origin_lng: originCoords ? originCoords[1] : null,
-        dest_lat: destCoords ? destCoords[0] : null,
-        dest_lng: destCoords ? destCoords[1] : null,
-
-        route_polyline: fullPolyline,
-      });
+      const res = await tripsApi.create(createTripPayload(route, "active"));
       setSaved(true);
       setTimeout(
         () =>
@@ -270,28 +266,7 @@ export default function NewTravel() {
     const route = routesData.routes[selectedRouteIdx];
     setSaving(true);
     try {
-      const fullPath = route.legs
-        ? route.legs.flatMap((leg: any) => leg.path || [])
-        : [];
-      const fullPolyline =
-        fullPath.length > 0 ? polyline.encode(fullPath) : null;
-
-      await tripsApi.create({
-        origin: originStr,
-        destination: destStr,
-        mode: mode,
-        distance_km: Number(route.total_distance_km.toFixed(2)),
-        duration_mins: Math.round(route.total_duration_mins),
-        total_fare: route.grand_total_fare || 0,
-        status: "pending",
-
-        origin_lat: originCoords ? originCoords[0] : null,
-        origin_lng: originCoords ? originCoords[1] : null,
-        dest_lat: destCoords ? destCoords[0] : null,
-        dest_lng: destCoords ? destCoords[1] : null,
-
-        route_polyline: fullPolyline,
-      });
+      await tripsApi.create(createTripPayload(route, "pending"));
       setSaved(true);
       setTimeout(() => navigate("/dashboard"), 1000);
     } catch (err) {
@@ -308,43 +283,44 @@ export default function NewTravel() {
 
   return (
     <div
-      className="h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-900 overflow-hidden"
+      className="h-screen bg-[#f0f4ff] flex flex-col md:flex-row text-[#0d1f5c] overflow-hidden"
       style={{ fontFamily: '"Raleway", sans-serif' }}
     >
-      {/* LEFT COLUMN: Aila & Inputs */}
-      <div className="w-full md:w-[380px] lg:w-[420px] bg-white border-r border-slate-200 flex flex-col z-20 shadow-xl shrink-0 h-full overflow-hidden">
-        <header className="px-6 py-5 flex items-center gap-4 border-b border-slate-100 bg-white sticky top-0 z-30">
+      {/* ── LEFT COLUMN: Input Panel ── */}
+      <div className="w-full md:w-[400px] lg:w-[420px] bg-white border-b md:border-b-0 md:border-r border-indigo-50 flex flex-col z-20 shadow-[5px_0_30px_rgba(13,31,92,0.03)] shrink-0 h-full">
+        {/* Header */}
+        <header className="px-6 py-5 flex items-center gap-4 bg-white shrink-0 z-30">
           <button
             onClick={() => navigate("/dashboard")}
-            className="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:border-indigo-200 transition-all hover:scale-105"
+            className="w-10 h-10 rounded-[14px] bg-white border border-indigo-50 flex items-center justify-center text-[#0d1f5c] hover:bg-[#f8f9ff] hover:border-indigo-100 transition-all shadow-sm"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={20} strokeWidth={2.5} />
           </button>
           <div
             style={{ fontFamily: '"Sora", sans-serif' }}
-            className="font-extrabold text-xl tracking-tight text-[#0d1f5c]"
+            className="font-extrabold text-[20px] tracking-tight text-[#0d1f5c]"
           >
             Plan Your Trip
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto no-scrollbar bg-white flex flex-col">
-          {/* STATIC AILA CHAT UI */}
-          <div className="p-6 bg-white border-b border-slate-100 shrink-0">
-            <div className="flex items-center gap-5">
-              <div className="w-32 h-32 md:w-36 md:h-36 shrink-0 relative">
-                <div className="absolute inset-0 bg-indigo-50 rounded-full blur-2xl pointer-events-none"></div>
+        {/* Content Body */}
+        <div className="flex-1 overflow-y-auto bg-white flex flex-col custom-scrollbar">
+          {/* AILA CHAT UI */}
+          <div className="px-6 pb-6 pt-2 shrink-0 border-b border-indigo-50/50">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 shrink-0 relative">
                 <img
                   src={ailaMascot}
-                  alt="Aila Mascot"
+                  alt="Aila"
                   className="w-full h-full object-contain relative z-10"
                 />
               </div>
-              <div className="flex-1 flex flex-col gap-2">
+              <div className="flex-1">
                 {ailaMessages.map((msg, idx) => (
                   <div
                     key={idx}
-                    className="bg-slate-50 border border-slate-100 text-[#0d1f5c] text-sm font-semibold p-4 rounded-[24px] rounded-bl-sm shadow-sm leading-relaxed"
+                    className="bg-white border border-indigo-50 text-[#0d1f5c] text-[12px] font-bold p-3.5 rounded-[18px] shadow-sm leading-snug"
                   >
                     {msg}
                   </div>
@@ -353,46 +329,44 @@ export default function NewTravel() {
             </div>
           </div>
 
-          <div className="px-6 pb-6 pt-6 flex-1 space-y-8">
+          {/* Form Stack (Grouped at the top, empty space stays at the bottom naturally) */}
+          <div className="px-6 pt-6 pb-12 flex flex-col gap-6">
             {/* Input Section */}
-            <div className="space-y-4 relative">
-              <div className="absolute left-[29px] top-10 bottom-10 w-0.5 bg-slate-200/60 z-0"></div>
+            <div className="space-y-3 relative">
+              {/* Connecting Line */}
+              <div className="absolute left-[24px] top-10 bottom-10 w-[2px] bg-indigo-50 z-0"></div>
 
               {/* Start Input */}
               <div className="flex items-center gap-3 relative z-10">
                 <div className="relative flex-1">
                   <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                    <div
-                      className={`w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm transition-colors ${originCoords ? "bg-indigo-600" : "bg-slate-300"}`}
-                    ></div>
+                    <div className="w-3.5 h-3.5 rounded-full bg-indigo-500 shadow-[0_0_0_3px_white]"></div>
                   </div>
                   <input
                     ref={originRef}
                     type="text"
                     placeholder="Starting Point"
-                    className="w-full pl-12 pr-12 py-4.5 bg-slate-50 border border-slate-200 rounded-[20px] text-sm font-bold text-[#0d1f5c] focus:bg-white focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:font-medium placeholder:text-slate-400"
+                    className="w-full pl-12 pr-11 py-4 bg-white border border-indigo-100 rounded-[18px] text-[13px] font-bold text-[#0d1f5c] focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:font-semibold placeholder:text-slate-400 shadow-sm"
                     value={originStr}
                     onChange={(e) => {
                       setOriginStr(e.target.value);
                       setOriginCoords(null);
                     }}
                   />
-                  {/* Locate Me Button (Only on Origin) */}
                   <button
                     onClick={() => handleCurrentLocation("origin")}
-                    title="Use current location"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-400 hover:text-indigo-600 transition-colors bg-white p-1.5 rounded-lg"
                   >
-                    <Navigation size={18} />
+                    <Navigation size={16} strokeWidth={2.5} />
                   </button>
                 </div>
                 <button
                   onClick={() =>
                     setPinMode(pinMode === "origin" ? null : "origin")
                   }
-                  className={`w-14 h-14 shrink-0 rounded-[20px] border transition-all flex items-center justify-center gap-2 active:scale-95 ${pinMode === "origin" ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/30 font-black text-xs" : "bg-white border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 shadow-sm"}`}
+                  className={`w-12 h-12 shrink-0 rounded-[18px] border-2 transition-all flex items-center justify-center gap-2 active:scale-95 ${pinMode === "origin" ? "bg-indigo-600 border-indigo-600 text-white shadow-md font-black text-[9px] tracking-widest" : "bg-white border-indigo-50 text-indigo-400 hover:text-indigo-600 hover:border-indigo-100 shadow-sm"}`}
                 >
-                  {pinMode === "origin" ? "PICK" : <MapPin size={22} />}
+                  {pinMode === "origin" ? "PICK" : <MapPin size={20} />}
                 </button>
               </div>
 
@@ -400,15 +374,13 @@ export default function NewTravel() {
               <div className="flex items-center gap-3 relative z-10">
                 <div className="relative flex-1">
                   <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                    <div
-                      className={`w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm transition-colors ${destCoords ? "bg-[#0d1f5c]" : "bg-slate-300"}`}
-                    ></div>
+                    <div className="w-3.5 h-3.5 rounded-full border-[3px] border-indigo-200 bg-white"></div>
                   </div>
                   <input
                     ref={destRef}
                     type="text"
                     placeholder="Destination"
-                    className="w-full pl-12 pr-4 py-4.5 bg-slate-50 border border-slate-200 rounded-[20px] text-sm font-bold text-[#0d1f5c] focus:bg-white focus:border-[#0d1f5c] focus:ring-4 focus:ring-indigo-50 transition-all placeholder:font-medium placeholder:text-slate-400"
+                    className="w-full pl-12 pr-4 py-4 bg-white border border-indigo-100 rounded-[18px] text-[13px] font-bold text-[#0d1f5c] focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:font-semibold placeholder:text-slate-400 shadow-sm"
                     value={destStr}
                     onChange={(e) => {
                       setDestStr(e.target.value);
@@ -420,101 +392,103 @@ export default function NewTravel() {
                   onClick={() =>
                     setPinMode(pinMode === "destination" ? null : "destination")
                   }
-                  className={`w-14 h-14 shrink-0 rounded-[20px] border transition-all flex items-center justify-center gap-2 active:scale-95 ${pinMode === "destination" ? "bg-[#0d1f5c] border-[#0d1f5c] text-white shadow-lg shadow-indigo-900/30 font-black text-xs" : "bg-white border-slate-200 text-slate-400 hover:text-[#0d1f5c] hover:border-indigo-200 shadow-sm"}`}
+                  className={`w-12 h-12 shrink-0 rounded-[18px] border-2 transition-all flex items-center justify-center gap-2 active:scale-95 ${pinMode === "destination" ? "bg-[#0d1f5c] border-[#0d1f5c] text-white shadow-md font-black text-[9px] tracking-widest" : "bg-white border-indigo-50 text-indigo-400 hover:text-[#0d1f5c] hover:border-indigo-100 shadow-sm"}`}
                 >
                   {pinMode === "destination" ? (
                     "PICK"
                   ) : (
-                    <LocateFixed size={22} />
+                    <LocateFixed size={20} />
                   )}
                 </button>
               </div>
             </div>
 
-            {/* Travel Mode & Calculate */}
-            <div className="space-y-4">
-              <div className="bg-slate-50 p-2 rounded-2xl border border-slate-200 flex">
-                <button
-                  onClick={() => setMode("transit")}
-                  className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 ${mode === "transit" ? "bg-white text-indigo-700 shadow-sm border border-slate-100" : "text-slate-500 hover:text-slate-700"}`}
-                >
-                  <Bus size={18} /> Transit
-                </button>
-                <button
-                  onClick={() => setMode("driving")}
-                  className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 ${mode === "driving" ? "bg-white text-indigo-700 shadow-sm border border-slate-100" : "text-slate-500 hover:text-slate-700"}`}
-                >
-                  <Car size={18} /> Driving
-                </button>
-              </div>
-
-              {mode === "transit" && (
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                  <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
-                    <UserSquare2 size={16} className="text-indigo-400" />{" "}
-                    Passenger ID Configuration
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { id: "regular", label: "Regular" },
-                      { id: "student", label: "Student ID" },
-                      { id: "senior", label: "Senior/PWD" },
-                    ].map((type) => (
-                      <button
-                        key={type.id}
-                        onClick={() => setPassengerType(type.id)}
-                        className={`py-3 px-4 rounded-xl border text-sm font-bold transition-all flex items-center justify-center ${passengerType === type.id ? "bg-indigo-50 border-indigo-200 text-[#0d1f5c] shadow-inner" : "bg-white border-slate-200 text-slate-500 hover:border-indigo-200 hover:bg-slate-50"}`}
-                      >
-                        {type.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
+            {/* Travel Mode Toggle */}
+            <div className="bg-[#f8f9ff] p-1.5 rounded-[20px] border border-indigo-50 flex">
               <button
-                onClick={handleSearch}
-                disabled={loading || !originStr || !destStr}
-                className="w-full py-4.5 bg-[#0d1f5c] text-white text-sm font-extrabold rounded-2xl hover:bg-indigo-700 transition-all disabled:opacity-50 shadow-lg shadow-indigo-900/20 flex items-center justify-center gap-3 active:scale-[0.98]"
+                onClick={() => setMode("transit")}
+                className={`flex-1 py-3 px-4 rounded-[16px] text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 ${mode === "transit" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-400 hover:text-indigo-400"}`}
               >
-                {loading ? (
-                  <Loader2 className="animate-spin" size={22} />
-                ) : (
-                  <>
-                    <Sparkles size={19} /> Calculate Trip Options
-                  </>
-                )}
+                <Bus size={16} /> Transit
+              </button>
+              <button
+                onClick={() => setMode("driving")}
+                className={`flex-1 py-3 px-4 rounded-[16px] text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 ${mode === "driving" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-400 hover:text-indigo-400"}`}
+              >
+                <Car size={16} /> Driving
               </button>
             </div>
 
-            <div className="w-20 h-0.5 bg-slate-100 mx-auto rounded-full mt-4"></div>
+            {/* Passenger Type */}
+            {mode === "transit" && (
+              <div className="bg-white p-5 rounded-[20px] border border-indigo-50 shadow-sm">
+                <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-3 flex items-center gap-2">
+                  <UserSquare2 size={14} /> Passenger Type
+                </p>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {[
+                    { id: "regular", label: "Regular" },
+                    { id: "student", label: "Student ID" },
+                    { id: "senior", label: "Senior/PWD" },
+                  ].map((type) => (
+                    <button
+                      key={type.id}
+                      onClick={() => setPassengerType(type.id)}
+                      className={`py-3 px-3 rounded-[14px] border-2 text-[12px] font-extrabold transition-all flex items-center justify-center ${passengerType === type.id ? "bg-indigo-50/50 border-indigo-400 text-indigo-700" : "bg-white border-indigo-50 text-slate-500 hover:border-indigo-100 hover:bg-[#f8f9ff]"}`}
+                    >
+                      {type.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Main Action Button */}
+            <button
+              onClick={handleSearch}
+              disabled={loading || !originStr || !destStr}
+              className="w-full py-4.5 bg-[#828cb8] text-white text-[13px] font-black uppercase tracking-widest rounded-[20px] hover:bg-[#6c76a5] transition-all disabled:opacity-50 shadow-[0_8px_20px_rgba(130,140,184,0.3)] flex items-center justify-center gap-3 active:scale-[0.98] mt-2"
+            >
+              {loading ? (
+                <Loader2 className="animate-spin" size={20} />
+              ) : (
+                <>
+                  <Search size={18} className="text-white/80" /> Find Best
+                  Routes
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>
 
-      <MapSection
-        originCoords={originCoords}
-        originStr={originStr}
-        destCoords={destCoords}
-        destStr={destStr}
-        activeRoute={activeRoute}
-        pinMode={pinMode}
-        handleMapPin={handleMapPin}
-        mode={mode}
-      />
+      {/* ── MIDDLE COLUMN: Map ── */}
+      <div className="flex-1 min-h-[40vh] md:min-h-full relative z-0">
+        <MapSection
+          originCoords={originCoords}
+          originStr={originStr}
+          destCoords={destCoords}
+          destStr={destStr}
+          activeRoute={activeRoute}
+          pinMode={pinMode}
+          handleMapPin={handleMapPin}
+          mode={mode}
+        />
+      </div>
 
-      <RouteOptions
-        routesData={routesData}
-        selectedRouteIdx={selectedRouteIdx}
-        setSelectedRouteIdx={setSelectedRouteIdx}
-        mode={mode}
-        handleStartJourney={handleStartJourney}
-        handleSaveForLater={handleSaveForLater}
-        saving={saving}
-        saved={saved}
-      />
-
-      <style>{`.no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } .custom-pin { overflow: visible !important; }`}</style>
+      {/* ── RIGHT COLUMN: Route Options ── */}
+      {routesData && (
+        <RouteOptions
+          routesData={routesData}
+          selectedRouteIdx={selectedRouteIdx}
+          setSelectedRouteIdx={setSelectedRouteIdx}
+          mode={mode}
+          handleStartJourney={handleStartJourney}
+          handleSaveForLater={handleSaveForLater}
+          saving={saving}
+          saved={saved}
+        />
+      )}
     </div>
   );
 }

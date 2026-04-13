@@ -2,7 +2,6 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
-  MapPin,
   Footprints,
   Train,
   Car,
@@ -22,160 +21,257 @@ export default function RouteOptions({
   saving,
   saved,
 }: any) {
-  if (!routesData) return null;
+  if (!routesData || !routesData.routes || routesData.routes.length === 0)
+    return null;
+
+  // --- HELPER: GENERATE SMART SUMMARY (e.g., "via 2 Bus and 1 Tram") ---
+  const generateSummary = (route: any) => {
+    const vehicles: Record<string, number> = {};
+    let hasTransit = false;
+
+    (route.legs || []).forEach((leg: any) => {
+      if (leg.type === "TRANSIT") {
+        hasTransit = true;
+        // Capitalize first letter, lowercase the rest (e.g., "BUS" -> "Bus")
+        const vType = leg.vehicle_type
+          ? leg.vehicle_type.charAt(0).toUpperCase() +
+            leg.vehicle_type.slice(1).toLowerCase()
+          : "Transit";
+
+        vehicles[vType] = (vehicles[vType] || 0) + 1;
+      }
+    });
+
+    if (!hasTransit) return route.summary || "Suggested Route";
+
+    // Build the string parts (e.g., ["2 Bus", "1 Tram"])
+    const parts = Object.entries(vehicles).map(
+      ([type, count]) => `${count} ${type}`,
+    );
+
+    if (parts.length === 1) return `via ${parts[0]}`;
+    if (parts.length > 1) {
+      const last = parts.pop();
+      return `via ${parts.join(", ")} and ${last}`;
+    }
+
+    return route.summary || "Suggested Route";
+  };
+
+  // --- SORTING: Move routes with insights/badges to the top ---
+  // We keep track of the original index so selecting a route passes the correct ID back to the map
+  const sortedRoutes = [...routesData.routes]
+    .map((route, originalIndex) => ({ route, originalIndex }))
+    .sort((a, b) => {
+      const aHasBadge = a.route.insights && a.route.insights.length > 0 ? 1 : 0;
+      const bHasBadge = b.route.insights && b.route.insights.length > 0 ? 1 : 0;
+      return bHasBadge - aHasBadge; // Sort descending (1 comes before 0)
+    });
 
   return (
-    <div className="w-full md:w-[400px] lg:w-[440px] bg-white flex flex-col z-20 shadow-2xl shrink-0 h-[60vh] md:h-full overflow-hidden transition-all duration-300 relative">
-      <header className="px-6 py-5 border-b border-slate-200 bg-white shrink-0">
+    <div className="w-full md:w-[400px] lg:w-[440px] bg-white border-t md:border-t-0 md:border-l border-indigo-100 flex flex-col z-20 shadow-[-10px_0_40px_rgba(13,31,92,0.05)] shrink-0 h-[60vh] md:h-full overflow-hidden transition-all duration-300 relative rounded-t-[2rem] md:rounded-none">
+      {/* Mobile Drag Handle */}
+      <div className="w-full flex justify-center py-3 md:hidden absolute top-0 left-0 z-30">
+        <div className="w-12 h-1.5 bg-indigo-100 rounded-full"></div>
+      </div>
+
+      <header className="px-6 md:px-8 pt-8 pb-5 border-b border-indigo-50 bg-white/90 backdrop-blur-md shrink-0 z-20">
         <div
           style={{ fontFamily: '"Sora", sans-serif' }}
-          className="font-extrabold text-xl tracking-tight text-[#0d1f5c]"
+          className="font-extrabold text-[20px] tracking-tight text-[#0d1f5c]"
         >
           Trip Choices
         </div>
-        <p className="text-sm text-slate-500 font-medium mt-1">
+        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">
           Select a route to view details
         </p>
       </header>
 
       {/* Main scrollable list */}
-      <div className="p-4 flex-1 overflow-y-auto space-y-3 no-scrollbar bg-slate-50">
-        {routesData.routes?.map((route: any, i: number) => {
-          const isSelected = selectedRouteIdx === i;
+      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 custom-scrollbar pb-[120px] bg-[#f8f9ff]">
+        <div className="space-y-4">
+          {sortedRoutes.map(({ route, originalIndex }) => {
+            const isSelected = selectedRouteIdx === originalIndex;
+            const hasInsights = route.insights && route.insights.length > 0;
+            const smartSummary = generateSummary(route);
 
-          return (
-            <div
-              key={i}
-              className={`rounded-[20px] transition-all border overflow-hidden ${isSelected ? "border-indigo-600 bg-white shadow-md ring-1 ring-indigo-600" : "border-slate-200 bg-white hover:border-indigo-300 shadow-sm"}`}
-            >
-              {/* Clickable Header Area */}
+            return (
               <div
-                onClick={() => setSelectedRouteIdx(isSelected ? null : i)}
-                className="p-5 cursor-pointer hover:bg-slate-50/50 transition-colors"
+                key={originalIndex}
+                onClick={() =>
+                  setSelectedRouteIdx(isSelected ? null : originalIndex)
+                }
+                className={`relative rounded-[24px] border-2 transition-all cursor-pointer overflow-hidden ${
+                  isSelected
+                    ? "bg-[#0d1f5c] border-[#0d1f5c] shadow-[0_10px_30px_rgba(13,31,92,0.2)] scale-[1.02]"
+                    : "bg-white border-indigo-50 hover:border-indigo-200 shadow-sm hover:shadow-md"
+                }`}
               >
-                {/* Standard Minimalist Badges */}
-                {route.insights && route.insights.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {route.insights.map((insight: string, idx: number) => (
-                      <span
-                        key={idx}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          insight === "Cheapest"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : insight === "Fastest"
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-indigo-100 text-indigo-800"
-                        }`}
+                <div className="p-5 md:p-6 relative">
+                  {/* HIGHLY VISIBLE BADGES */}
+                  {hasInsights && (
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {route.insights.map((insight: string, i: number) => {
+                        const isFast = insight.toLowerCase().includes("fast");
+                        const isCheap = insight.toLowerCase().includes("cheap");
+
+                        // Pick vibrant, high-contrast colors for badges
+                        let badgeStyle = "bg-indigo-100 text-indigo-700";
+                        if (isFast) badgeStyle = "bg-amber-400 text-amber-950";
+                        if (isCheap)
+                          badgeStyle = "bg-emerald-400 text-emerald-950";
+
+                        return (
+                          <span
+                            key={i}
+                            className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest shadow-sm ${badgeStyle}`}
+                          >
+                            {insight}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-start mb-5">
+                    <div
+                      style={{ fontFamily: '"Sora", sans-serif' }}
+                      className={`font-bold text-[16px] leading-tight ${isSelected ? "text-white" : "text-[#0d1f5c]"}`}
+                    >
+                      {smartSummary}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-6">
+                    <div>
+                      <p
+                        className={`text-[9px] font-black uppercase tracking-widest mb-1 ${isSelected ? "text-indigo-300" : "text-slate-400"}`}
                       >
-                        {insight}
-                      </span>
-                    ))}
+                        Time
+                      </p>
+                      <p
+                        style={{ fontFamily: '"Sora", sans-serif' }}
+                        className={`text-[22px] font-black leading-none ${isSelected ? "text-white" : "text-[#0d1f5c]"}`}
+                      >
+                        {Math.round(route.total_duration_mins)}
+                        <span
+                          className={`text-sm font-bold ml-0.5 ${isSelected ? "text-indigo-200" : "text-slate-400"}`}
+                        >
+                          m
+                        </span>
+                      </p>
+                    </div>
+                    <div>
+                      <p
+                        className={`text-[9px] font-black uppercase tracking-widest mb-1 ${isSelected ? "text-indigo-300" : "text-slate-400"}`}
+                      >
+                        Est. Fare
+                      </p>
+                      <p
+                        style={{ fontFamily: '"Sora", sans-serif' }}
+                        className={`text-[22px] font-black leading-none ${isSelected ? "text-emerald-400" : "text-emerald-600"}`}
+                      >
+                        <span
+                          className={`text-sm font-bold mr-0.5 ${isSelected ? "text-emerald-500" : "text-emerald-300"}`}
+                        >
+                          ₱
+                        </span>
+                        {route.grand_total_fare || 0}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Route Steps Timeline (Only visible when selected) */}
+                  {isSelected && (
+                    <div className="mt-6 pt-5 border-t border-white/10 flex flex-col gap-4">
+                      {route.legs.map((leg: any, legIdx: number) => {
+                        const isWalk = leg.type === "WALKING";
+                        const Icon = isWalk
+                          ? Footprints
+                          : leg.type === "TRANSIT"
+                            ? Train
+                            : Car;
+                        return (
+                          <div
+                            key={legIdx}
+                            className="flex items-start gap-3 relative"
+                          >
+                            {/* Vertical connecting line */}
+                            {legIdx !== route.legs.length - 1 && (
+                              <div className="absolute top-8 bottom-[-16px] left-[15px] w-0.5 bg-white/10 rounded-full"></div>
+                            )}
+                            <div
+                              className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 ${isWalk ? "bg-white/10 text-indigo-200" : "bg-indigo-500 text-white"}`}
+                            >
+                              <Icon size={14} />
+                            </div>
+                            <div className="flex-1 pt-1">
+                              <p className="text-[12px] font-bold text-white leading-snug">
+                                {stripHtml(leg.instructions)}
+                              </p>
+                              <p className="text-[10px] font-bold text-indigo-200 mt-1 flex items-center gap-1">
+                                <Clock size={10} />{" "}
+                                {Math.round(leg.duration_mins)} mins
+                                {leg.fare > 0 && (
+                                  <span className="ml-2 px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 rounded text-[9px]">
+                                    ₱{leg.fare}
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Click to expand hint */}
+                {!isSelected && (
+                  <div className="bg-indigo-50/50 border-t border-indigo-50 py-3 px-6 flex justify-between items-center text-[10px] font-extrabold uppercase tracking-widest text-indigo-500 group-hover:bg-indigo-50 transition-colors">
+                    View Route Details <ChevronDown size={14} />
                   </div>
                 )}
-
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <div className="font-bold text-[#0d1f5c] text-[15px] leading-snug">
-                    {route.summary || `Route Option ${i + 1}`}
+                {isSelected && (
+                  <div className="bg-white/5 border-t border-white/10 py-3 px-6 flex justify-between items-center text-[10px] font-extrabold uppercase tracking-widest text-indigo-200 hover:bg-white/10 transition-colors">
+                    Close Details <ChevronUp size={14} />
                   </div>
-                  <div
-                    className={`shrink-0 transition-colors ${isSelected ? "text-indigo-600" : "text-slate-400"}`}
-                  >
-                    {isSelected ? (
-                      <ChevronUp size={22} />
-                    ) : (
-                      <ChevronDown size={22} />
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 pt-4 border-t border-slate-100">
-                  <div className="flex items-center gap-1.5 text-slate-600 text-[13px] font-semibold">
-                    <Clock size={16} className="text-indigo-400" />
-                    {Math.round(route.total_duration_mins)} min
-                  </div>
-                  <div className="flex items-center gap-1.5 text-slate-600 text-[13px] font-semibold">
-                    <MapPin size={16} className="text-indigo-400" />
-                    {route.total_distance_km.toFixed(1)} km
-                  </div>
-                  <div
-                    style={{ fontFamily: '"Sora", sans-serif' }}
-                    className="text-lg text-[#0d1f5c] font-black ml-auto tracking-tight"
-                  >
-                    ₱{route.grand_total_fare.toFixed(2)}
-                  </div>
-                </div>
+                )}
               </div>
-
-              {/* Expanded Detailed Steps */}
-              {isSelected && (
-                <div className="px-5 pb-5 pt-0 bg-white">
-                  <div className="space-y-4 mt-2 relative">
-                    <div className="absolute left-[15px] top-4 bottom-4 w-0.5 bg-indigo-100 z-0 rounded-full"></div>
-
-                    {route.legs.map((leg: any, idx: number) => (
-                      <div key={idx} className="flex gap-4 relative z-10">
-                        <div className="flex flex-col items-center shrink-0">
-                          <div className="w-8 h-8 rounded-full bg-white border-2 border-indigo-100 flex items-center justify-center shadow-sm">
-                            {leg.type === "WALKING" ? (
-                              <Footprints
-                                size={14}
-                                className="text-slate-400"
-                              />
-                            ) : leg.type === "TRANSIT" ? (
-                              <Train size={14} className="text-indigo-600" />
-                            ) : (
-                              <Car size={14} className="text-indigo-600" />
-                            )}
-                          </div>
-                        </div>
-                        <div className="pt-1.5 pb-2">
-                          <p className="text-[13px] font-semibold text-slate-700 leading-snug">
-                            {stripHtml(leg.instructions)}
-                          </p>
-                          {leg.estimated_fare > 0 && (
-                            <p className="text-[11px] font-bold text-emerald-600 mt-1">
-                              Fare: ₱{leg.estimated_fare.toFixed(2)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {/* Adds padding to the bottom so the last item isn't hidden by the sticky footer */}
-        {selectedRouteIdx !== null && <div className="h-24"></div>}
+            );
+          })}
+        </div>
       </div>
 
-      {/* Sticky Bottom Action Bar */}
+      {/* Glassmorphic Bottom Action Bar */}
       {selectedRouteIdx !== null && (
-        <div className="absolute bottom-0 left-0 right-0 p-5 bg-white border-t border-slate-100 shadow-[0_-15px_30px_rgba(13,31,92,0.08)] z-30">
+        <div className="absolute bottom-0 left-0 right-0 p-5 bg-white/90 backdrop-blur-xl border-t border-indigo-50 shadow-[0_-20px_40px_rgba(13,31,92,0.08)] z-30">
           <div className="flex gap-3">
             <button
               onClick={handleSaveForLater}
               disabled={saving || saved}
-              className="flex-1 py-4 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 text-indigo-700 text-sm font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+              className="flex-1 py-4 bg-[#f8f9ff] hover:bg-indigo-100 border border-indigo-100 text-[#0d1f5c] text-[13px] font-black uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-2 active:scale-95"
             >
               <Bookmark size={18} /> Save
             </button>
             <button
               onClick={handleStartJourney}
               disabled={saving || saved}
-              className={`flex-[2] py-4 text-white text-sm font-extrabold rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${saved ? "bg-emerald-500 shadow-emerald-500/30" : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/30"}`}
+              className={`flex-[2] py-4 text-white text-[13px] font-black uppercase tracking-widest rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 ${
+                saved
+                  ? "bg-emerald-500 shadow-emerald-500/30"
+                  : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/30"
+              }`}
             >
               {saving ? (
                 <Loader2 className="animate-spin" size={20} />
               ) : saved ? (
                 <>
-                  <CheckCircle2 size={20} /> Done!
+                  <CheckCircle2 size={18} /> Verified
                 </>
               ) : (
                 <>
-                  <Play size={18} fill="currentColor" /> Start Live Tracking
+                  <Play size={18} fill="currentColor" /> Start Trip
                 </>
               )}
             </button>
