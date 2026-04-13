@@ -2,15 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { type Trip, tripsApi } from "../config/api";
 import { useAuth } from "../contexts/AuthContext";
+import Sidebar from "../components/Sidebar";
 import {
-  LogOut,
   Plus,
   Navigation2,
-  MapPin,
   Calendar,
-  LayoutDashboard,
-  Compass,
-  Settings,
   Route,
   Map as MapIcon,
   ChevronRight,
@@ -24,7 +20,7 @@ import {
 } from "lucide-react";
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [greeting, setGreeting] = useState("");
@@ -95,93 +91,11 @@ export default function Dashboard() {
       className="h-screen w-full bg-[#f4f7ff] flex overflow-hidden text-[#0d1f5c]"
       style={{ fontFamily: '"Raleway", sans-serif' }}
     >
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-[#0d1f5c]/40 backdrop-blur-sm z-40 md:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-
-      <div
-        className={`fixed inset-y-0 left-0 z-50 w-[280px] bg-white border-r border-indigo-100/50 flex flex-col p-6 shadow-2xl transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:shadow-none ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
-      >
-        <button
-          className="md:hidden absolute top-6 right-6 text-slate-400 hover:text-indigo-600"
-          onClick={() => setIsSidebarOpen(false)}
-        >
-          <X size={24} />
-        </button>
-
-        <div className="flex items-center gap-3 mb-10 px-2 mt-2">
-          <img
-            src="/aila-icon.png"
-            alt="Aila"
-            className="w-9 h-9 object-contain"
-          />
-          <span
-            style={{ fontFamily: '"Sora", sans-serif' }}
-            className="text-3xl font-black tracking-tight text-[#0d1f5c]"
-          >
-            Aila.
-          </span>
-        </div>
-
-        <div className="flex flex-col gap-2 flex-1 overflow-y-auto no-scrollbar">
-          <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2 px-4 flex items-center gap-2">
-            <Compass size={12} /> Navigation
-          </div>
-
-          <nav className="space-y-2">
-            <button className="group flex items-center justify-between px-4 py-3.5 bg-[#0d1f5c] text-white rounded-2xl font-bold w-full shadow-lg shadow-indigo-900/20">
-              <div className="flex items-center gap-3">
-                <LayoutDashboard size={18} className="text-indigo-300" />
-                Dashboard
-              </div>
-            </button>
-            <button
-              onClick={() => navigate("/saved-places")}
-              className="group flex items-center justify-between px-4 py-3.5 hover:bg-indigo-50/80 text-slate-500 hover:text-[#0d1f5c] rounded-2xl font-bold w-full transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <MapPin size={18} /> Saved Places
-              </div>
-            </button>
-            <button
-              onClick={() => navigate("/settings")}
-              className="group flex items-center justify-between px-4 py-3.5 hover:bg-indigo-50/80 text-slate-500 hover:text-[#0d1f5c] rounded-2xl font-bold w-full transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <Settings size={18} /> Profile
-              </div>
-            </button>
-          </nav>
-        </div>
-
-        <div className="mt-6 pt-6 border-t border-indigo-100/50 shrink-0">
-          <div className="flex items-center gap-3 px-2 mb-6 bg-indigo-50/50 p-3 rounded-2xl border border-indigo-100/50">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0d1f5c] to-indigo-700 text-white flex items-center justify-center font-bold shadow-md">
-              {user?.firstName?.charAt(0) || "U"}
-            </div>
-            <div className="overflow-hidden">
-              <p
-                style={{ fontFamily: '"Sora", sans-serif' }}
-                className="text-sm font-bold text-[#0d1f5c] truncate"
-              >
-                {user?.firstName} {user?.lastName}
-              </p>
-              <p className="text-[10px] text-slate-400 font-semibold truncate">
-                {user?.email}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={logout}
-            className="flex items-center justify-center gap-2 px-4 py-3.5 bg-rose-50 hover:bg-rose-100 text-rose-500 font-bold rounded-2xl w-full transition-colors"
-          >
-            <LogOut size={18} /> Sign Out
-          </button>
-        </div>
-      </div>
+      <Sidebar
+        activeTab="dashboard"
+        isMobileOpen={isSidebarOpen}
+        onCloseMobile={() => setIsSidebarOpen(false)}
+      />
 
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         <div className="md:hidden flex items-center justify-between bg-white/80 backdrop-blur-md px-6 py-4 border-b border-indigo-100 z-30 sticky top-0">

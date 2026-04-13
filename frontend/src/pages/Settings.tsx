@@ -1,17 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  Save,
-  User,
-  LayoutDashboard,
-  MapPin,
-  Settings as SettingsIcon,
-  Compass,
-  CheckCircle2,
-} from "lucide-react";
+import { ArrowLeft, Save, User, CheckCircle2, Menu } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { usersApi } from "../config/api";
+import Sidebar from "../components/Sidebar";
 
 export default function Settings() {
   const { user, login } = useAuth();
@@ -21,6 +13,7 @@ export default function Settings() {
   const [lastName, setLastName] = useState(user?.lastName || "");
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -50,50 +43,11 @@ export default function Settings() {
       className="min-h-screen w-full bg-[#f4f7ff] flex flex-col md:flex-row text-[#0d1f5c]"
       style={{ fontFamily: '"Raleway", sans-serif' }}
     >
-      <div className="hidden md:flex flex-col w-[280px] bg-white border-r border-indigo-100/50 p-6 shadow-2xl z-20 shrink-0">
-        <div className="flex items-center gap-3 mb-10 px-2 mt-2">
-          <img
-            src="/aila-icon.png"
-            alt="Aila"
-            className="w-9 h-9 object-contain"
-          />
-          <span
-            style={{ fontFamily: '"Sora", sans-serif' }}
-            className="text-3xl font-black tracking-tight text-[#0d1f5c]"
-          >
-            Aila.
-          </span>
-        </div>
-
-        <div className="flex flex-col gap-2 flex-1">
-          <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2 px-4 flex items-center gap-2">
-            <Compass size={12} /> Navigation
-          </div>
-          <nav className="space-y-2">
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="group flex items-center justify-between px-4 py-3.5 hover:bg-indigo-50/80 text-slate-500 hover:text-[#0d1f5c] rounded-2xl font-bold w-full transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <LayoutDashboard size={18} /> Dashboard
-              </div>
-            </button>
-            <button
-              onClick={() => navigate("/saved-places")}
-              className="group flex items-center justify-between px-4 py-3.5 hover:bg-indigo-50/80 text-slate-500 hover:text-[#0d1f5c] rounded-2xl font-bold w-full transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <MapPin size={18} /> Saved Places
-              </div>
-            </button>
-            <button className="group flex items-center justify-between px-4 py-3.5 bg-[#0d1f5c] text-white rounded-2xl font-bold w-full shadow-lg shadow-indigo-900/20">
-              <div className="flex items-center gap-3">
-                <SettingsIcon size={18} className="text-indigo-300" /> Profile
-              </div>
-            </button>
-          </nav>
-        </div>
-      </div>
+      <Sidebar
+        activeTab="profile"
+        isMobileOpen={isSidebarOpen}
+        onCloseMobile={() => setIsSidebarOpen(false)}
+      />
 
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         <div className="flex items-center justify-between bg-white px-6 py-5 border-b border-indigo-100 z-30 sticky top-0 shrink-0">
@@ -111,6 +65,12 @@ export default function Settings() {
               Profile Settings
             </h1>
           </div>
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="md:hidden p-2 bg-indigo-50 text-indigo-600 rounded-xl"
+          >
+            <Menu size={22} />
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
@@ -134,7 +94,7 @@ export default function Settings() {
               </div>
 
               <div className="flex flex-col md:flex-row gap-8">
-                {/* <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center gap-4">
                   <div className="w-32 h-32 rounded-[2rem] border-4 border-[#f8f9ff] bg-indigo-50 shadow-lg shadow-indigo-100/50 flex items-center justify-center relative">
                     <span className="text-5xl font-black text-indigo-300 uppercase">
                       {firstName?.charAt(0) ||
@@ -145,7 +105,7 @@ export default function Settings() {
                   <p className="text-xs font-extrabold text-indigo-400 uppercase tracking-widest">
                     Avatar
                   </p>
-                </div> */}
+                </div>
 
                 <div className="flex-1 space-y-5">
                   <div>
