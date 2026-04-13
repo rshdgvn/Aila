@@ -222,6 +222,12 @@ export default function NewTravel() {
     const route = routesData.routes[selectedRouteIdx];
     setSaving(true);
     try {
+      const fullPath = route.legs
+        ? route.legs.flatMap((leg: any) => leg.path || [])
+        : [];
+      const fullPolyline =
+        fullPath.length > 0 ? polyline.encode(fullPath) : null;
+
       const res = await tripsApi.create({
         origin: originStr,
         destination: destStr,
@@ -230,6 +236,13 @@ export default function NewTravel() {
         duration_mins: Math.round(route.total_duration_mins),
         total_fare: route.grand_total_fare || 0,
         status: "active",
+
+        origin_lat: originCoords ? originCoords[0] : null,
+        origin_lng: originCoords ? originCoords[1] : null,
+        dest_lat: destCoords ? destCoords[0] : null,
+        dest_lng: destCoords ? destCoords[1] : null,
+
+        route_polyline: fullPolyline,
       });
       setSaved(true);
       setTimeout(
@@ -257,6 +270,12 @@ export default function NewTravel() {
     const route = routesData.routes[selectedRouteIdx];
     setSaving(true);
     try {
+      const fullPath = route.legs
+        ? route.legs.flatMap((leg: any) => leg.path || [])
+        : [];
+      const fullPolyline =
+        fullPath.length > 0 ? polyline.encode(fullPath) : null;
+
       await tripsApi.create({
         origin: originStr,
         destination: destStr,
@@ -265,6 +284,13 @@ export default function NewTravel() {
         duration_mins: Math.round(route.total_duration_mins),
         total_fare: route.grand_total_fare || 0,
         status: "pending",
+
+        origin_lat: originCoords ? originCoords[0] : null,
+        origin_lng: originCoords ? originCoords[1] : null,
+        dest_lat: destCoords ? destCoords[0] : null,
+        dest_lng: destCoords ? destCoords[1] : null,
+
+        route_polyline: fullPolyline,
       });
       setSaved(true);
       setTimeout(() => navigate("/dashboard"), 1000);

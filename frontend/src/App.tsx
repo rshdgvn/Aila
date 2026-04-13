@@ -6,6 +6,7 @@ import ActiveJourney from './pages/ActiveJourney'
 import Home from "./pages/Home"
 import Register from './pages/Register'
 import Login from './pages/Login'
+import TripDetails from './pages/TripDetails'
 
 export default function App() {
   const { user, loading } = useAuth()
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/new-travel" element={user ? <NewTravel /> : <Navigate to="/login" />} />
         <Route path="/active-journey" element={user ? <ActiveJourney /> : <Navigate to="/login" />} />
+        <Route path="/trip/:id" element={user ? <TripDetails /> : <Navigate to="/login" />} />
         
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

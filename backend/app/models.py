@@ -17,6 +17,13 @@ class Trip(Base):
     id = Column(Integer, primary_key=True, index=True)
     origin = Column(String)
     destination = Column(String)
+    
+    origin_lat = Column(Float, nullable=True)
+    origin_lng = Column(Float, nullable=True)
+    dest_lat = Column(Float, nullable=True)
+    dest_lng = Column(Float, nullable=True)
+    route_polyline = Column(String, nullable=True)
+    
     mode = Column(String)
     distance_km = Column(Float)
     duration_mins = Column(Integer)

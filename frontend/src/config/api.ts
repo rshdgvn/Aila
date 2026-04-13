@@ -30,15 +30,21 @@ export interface User {
 }
 
 export interface Trip {
-  id?: number
-  origin: string
-  destination: string
-  mode: string
-  distance_km: number
-  duration_mins: number
-  total_fare: number
-  created_at?: string
-  status?: string
+  id?: number;
+  origin: string;
+  destination: string;
+  mode: string;
+  distance_km: number;
+  duration_mins: number;
+  total_fare: number;
+  created_at?: string;
+  status?: string;
+  origin_lat?: number | null;
+  origin_lng?: number | null;
+  dest_lat?: number | null;
+  dest_lng?: number | null;
+  route_polyline?: string | null;
+  path?: [number, number][]; 
 }
 
 export const authApi = {
