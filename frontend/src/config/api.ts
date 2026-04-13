@@ -78,6 +78,15 @@ export const routesApi = {
 }
 
 export const ailaApi = {
-  chat: (data: { text: string; current_step: number; total_steps: number }) => 
-    api.post('/aila/chat', data),
+  chat: (data: { 
+    text: string; 
+    current_step: number; 
+    total_steps: number;
+    origin?: string;
+    destination?: string;
+    mode?: string;
+    user_lat?: number;
+    user_lng?: number;
+    current_instruction?: string; 
+  }) => api.post('/aila/chat', data),
 }

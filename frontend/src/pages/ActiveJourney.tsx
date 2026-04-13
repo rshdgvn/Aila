@@ -218,11 +218,23 @@ export default function ActiveJourney() {
     setCurrentEmotion("thinking");
 
     try {
+      // Get the clean text of the current street instruction
+      const currentInstruction =
+        decodedLegs[currentStepIdx]?.instructions?.replace(/<[^>]*>?/gm, "") ||
+        "";
+
       const response = await ailaApi.chat({
         text: userText,
         current_step: currentStepIdx + 1,
         total_steps: decodedLegs.length,
+        origin: routeInfo?.origin,
+        destination: routeInfo?.destination,
+        mode: routeInfo?.mode,
+        user_lat: userLocation ? userLocation[0] : undefined,
+        user_lng: userLocation ? userLocation[1] : undefined,
+        current_instruction: currentInstruction,
       });
+
       setCurrentEmotion(response.data.emotion || "relax");
       setMessages((prev) => [
         ...prev,
@@ -236,6 +248,17 @@ export default function ActiveJourney() {
       ]);
     } finally {
       setLoadingAila(false);
+    }
+  };
+
+  const handleNextStepDemo = () => {
+    setIsLiveGPS(false);
+    const nextIdx = currentStepIdx + 1;
+    setCurrentStepIdx(nextIdx);
+
+    const nextLeg = decodedLegs[nextIdx];
+    if (nextLeg && nextLeg.path && nextLeg.path.length > 0) {
+      setUserLocation(nextLeg.path[0]);
     }
   };
 
@@ -492,10 +515,10 @@ export default function ActiveJourney() {
         <div className="p-5 bg-white border-t border-slate-100 shrink-0 space-y-3 shadow-[0_-15px_30px_rgba(13,31,92,0.03)]">
           {currentStepIdx < decodedLegs.length - 1 ? (
             <button
-              onClick={() => setCurrentStepIdx((prev) => prev + 1)}
+              onClick={handleNextStepDemo} 
               className="w-full py-4 bg-[#0d1f5c] hover:bg-indigo-900 text-white font-extrabold text-sm rounded-xl flex items-center justify-center shadow-lg shadow-indigo-900/20 active:scale-[0.98] transition-all"
             >
-              Next Step (Manual Override)
+              Next Step (Demo Mode)
             </button>
           ) : (
             <button
