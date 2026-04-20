@@ -49,3 +49,59 @@ Keep your loved ones in the loop. Share your live location, chosen route, and ex
 
 ### AI Engine
 * **Google Gemini**: Powering the trip assistant for real-time contextual updates.
+
+---
+
+## Installation & Setup
+
+### Prerequisites
+Make sure you have the following installed on your machine:
+* **Node.js** (v14 or higher)
+* **Python** (v3.8 or higher)
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/rshdgvn/Aila.git
+cd Aila
+```
+
+### 2. Backend Setup (FastAPI)
+Open a terminal and navigate to the `backend` directory to set up the Python environment.
+
+```bash
+cd backend
+
+# Create a virtual environment
+python -m venv venv
+
+# Activate the virtual environment
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+
+# Install the required Python dependencies
+pip install -r requirements.txt
+
+# Set up environment variables
+# Copy the example env file and update it with your actual keys
+cp .env.example .env
+
+# Start the FastAPI server
+uvicorn app.main:app --reload
+```
+*The backend server will typically run on `http://localhost:8000`.*
+
+### 3. Frontend Setup (React + TypeScript)
+Open a **new, separate terminal**, and navigate to the `frontend` directory.
+
+```bash
+cd frontend
+
+# Install Node dependencies
+npm install
+
+# Start the development server
+npm run dev
+```
+*The frontend application will start and can be viewed in your browser.*
