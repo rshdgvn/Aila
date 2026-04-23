@@ -23,3 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Ignore backend files
+../backend/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc

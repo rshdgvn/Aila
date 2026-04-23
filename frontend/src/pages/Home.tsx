@@ -22,6 +22,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
 
   useEffect(() => {
     if (!document.getElementById("raleway-sora-font")) {
@@ -32,10 +33,42 @@ export default function Home() {
       link.rel = "stylesheet";
       document.head.appendChild(link);
     }
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+      
+      const sections = ["problem", "hiw", "about"];
+      let current = "home";
+      for (const section of sections) {
+        const el = document.getElementById(section);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= 150) {
+            current = section;
+          }
+        }
+      }
+      setActiveSection(current);
+    };
+    
     window.addEventListener("scroll", handleScroll);
+    handleScroll(); // Initial check
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement | HTMLSpanElement>, section: string) => {
+    e.preventDefault();
+    setActiveSection(section);
+    if (section === "home") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      const el = document.getElementById(section);
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.scrollY - 100;
+        window.scrollTo({ top, behavior: "smooth" });
+      }
+    }
+    setMobileMenuOpen(false);
+  };
 
   const TICKER_ITEMS = [
     { label: "Smart Routing", sub: "Fastest & cheapest paths" },
@@ -146,24 +179,46 @@ export default function Home() {
           </div>
 
           <div className="hidden md:flex items-center gap-1">
-            <span className="px-4 py-2 rounded-xl text-sm font-bold text-indigo-600 bg-indigo-50/80 cursor-pointer">
+            <span
+              onClick={(e) => handleNavClick(e, "home")}
+              className={`px-4 py-2 rounded-xl text-sm font-bold cursor-pointer transition-all ${
+                activeSection === "home"
+                  ? "text-indigo-600 bg-indigo-50/80"
+                  : "text-slate-500 hover:text-indigo-600 hover:bg-white/60"
+              }`}
+            >
               Home
             </span>
             <a
               href="#problem"
-              className="px-4 py-2 rounded-xl text-sm font-bold text-slate-500 hover:text-indigo-600 hover:bg-white/60 transition-all"
+              onClick={(e) => handleNavClick(e, "problem")}
+              className={`px-4 py-2 rounded-xl text-sm font-bold cursor-pointer transition-all ${
+                activeSection === "problem"
+                  ? "text-indigo-600 bg-indigo-50/80"
+                  : "text-slate-500 hover:text-indigo-600 hover:bg-white/60"
+              }`}
             >
               Why Aila
             </a>
             <a
               href="#hiw"
-              className="px-4 py-2 rounded-xl text-sm font-bold text-slate-500 hover:text-indigo-600 hover:bg-white/60 transition-all"
+              onClick={(e) => handleNavClick(e, "hiw")}
+              className={`px-4 py-2 rounded-xl text-sm font-bold cursor-pointer transition-all ${
+                activeSection === "hiw"
+                  ? "text-indigo-600 bg-indigo-50/80"
+                  : "text-slate-500 hover:text-indigo-600 hover:bg-white/60"
+              }`}
             >
               How it works
             </a>
             <a
               href="#about"
-              className="px-4 py-2 rounded-xl text-sm font-bold text-slate-500 hover:text-indigo-600 hover:bg-white/60 transition-all"
+              onClick={(e) => handleNavClick(e, "about")}
+              className={`px-4 py-2 rounded-xl text-sm font-bold cursor-pointer transition-all ${
+                activeSection === "about"
+                  ? "text-indigo-600 bg-indigo-50/80"
+                  : "text-slate-500 hover:text-indigo-600 hover:bg-white/60"
+              }`}
             >
               About
             </a>
@@ -216,22 +271,23 @@ export default function Home() {
             </button>
           </div>
           <nav className="flex flex-col gap-2 flex-1">
-            {["Home", "Why Aila", "How it works", "About"].map((item, i) => (
+            {[
+              { id: "home", label: "Home" },
+              { id: "problem", label: "Why Aila" },
+              { id: "hiw", label: "How it works" },
+              { id: "about", label: "About" }
+            ].map((item) => (
               <a
-                key={item}
-                href={
-                  i === 0
-                    ? "#"
-                    : i === 1
-                      ? "#problem"
-                      : i === 2
-                        ? "#hiw"
-                        : "#about"
-                }
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-4 rounded-2xl text-lg font-bold text-[#0d1f5c] hover:bg-indigo-50 transition-all"
+                key={item.id}
+                href={item.id === "home" ? "#" : `#${item.id}`}
+                onClick={(e) => handleNavClick(e, item.id)}
+                className={`px-4 py-4 rounded-2xl text-lg font-bold transition-all ${
+                  activeSection === item.id
+                    ? "text-indigo-600 bg-indigo-50/80"
+                    : "text-[#0d1f5c] hover:bg-indigo-50"
+                }`}
               >
-                {item}
+                {item.label}
               </a>
             ))}
           </nav>
@@ -701,18 +757,21 @@ export default function Home() {
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-8">
             <a
               href="#problem"
+              onClick={(e) => handleNavClick(e, "problem")}
               className="text-sm text-white/50 font-semibold hover:text-white transition-colors"
             >
               Why Aila
             </a>
             <a
               href="#hiw"
+              onClick={(e) => handleNavClick(e, "hiw")}
               className="text-sm text-white/50 font-semibold hover:text-white transition-colors"
             >
               How it works
             </a>
             <a
               href="#about"
+              onClick={(e) => handleNavClick(e, "about")}
               className="text-sm text-white/50 font-semibold hover:text-white transition-colors"
             >
               About
