@@ -256,7 +256,7 @@ export default function ActiveJourney() {
 
   if (!routeInfo) {
     return (
-      <div className="h-screen bg-slate-50 flex items-center justify-center flex-col gap-5">
+      <div className="h-[100svh] bg-slate-50 flex items-center justify-center flex-col gap-5">
         <div className="w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center">
           <Loader2 className="animate-spin text-indigo-600" size={32} />
         </div>
@@ -274,8 +274,8 @@ export default function ActiveJourney() {
 
   return (
     <div
-      className="h-screen bg-slate-50 flex flex-col md:flex-row font-sans overflow-hidden text-slate-900"
-      style={{ fontFamily: '"Raleway", sans-serif' }}
+      className="h-[100svh] bg-slate-50 flex flex-col md:flex-row font-sans overflow-hidden text-slate-900"
+      style={{ fontFamily: '"Inter", sans-serif' }}
     >
       <div className="w-full md:w-[380px] lg:w-[420px] bg-[#f8f9ff] border-r border-indigo-100 flex flex-col z-20 shadow-2xl shrink-0 h-[55vh] md:h-full transition-all">
         <header className="p-4 sm:p-6 border-b border-indigo-50 bg-white flex items-center gap-4 sm:gap-5 shrink-0 relative overflow-hidden">

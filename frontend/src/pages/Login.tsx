@@ -45,7 +45,7 @@ export default function Login() {
 
   return (
     <div
-      className="min-h-screen flex text-[#0d1f5c]"
+      className="min-h-[100svh] flex text-[#0d1f5c]"
       style={{ fontFamily: '"Raleway", sans-serif' }}
     >
       {/* ── LEFT PANEL (Synced with Home Page Hero) ── */}

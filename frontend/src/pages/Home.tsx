@@ -153,7 +153,7 @@ export default function Home() {
 
   return (
     <div
-      className="min-h-screen bg-[#f0f4ff] text-[#0d1f5c] overflow-x-hidden flex flex-col"
+      className="min-h-[100svh] bg-[#f0f4ff] text-[#0d1f5c] overflow-x-hidden flex flex-col"
       style={{ fontFamily: '"Raleway", sans-serif' }}
     >
       <div className="fixed top-4 left-0 right-0 z-50 px-4 sm:px-6 pointer-events-none">

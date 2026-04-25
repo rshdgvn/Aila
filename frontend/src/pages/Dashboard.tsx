@@ -88,7 +88,7 @@ export default function Dashboard() {
 
   return (
     <div
-      className="h-screen w-full bg-[#f4f7ff] flex overflow-hidden text-[#0d1f5c]"
+      className="h-[100svh] w-full bg-[#f4f7ff] flex overflow-hidden text-[#0d1f5c]"
       style={{ fontFamily: '"Raleway", sans-serif' }}
     >
       <Sidebar

@@ -64,7 +64,7 @@ export default function RouteOptions({
     });
 
   return (
-    <div className="w-full md:w-[400px] lg:w-[440px] bg-white border-t md:border-t-0 md:border-l border-indigo-100 flex flex-col z-20 shadow-[-10px_0_40px_rgba(13,31,92,0.05)] shrink-0 h-[55vh] md:h-full overflow-hidden transition-all duration-300 relative rounded-t-[2rem] md:rounded-none">
+    <div className="fixed md:relative bottom-0 left-0 w-full md:w-[400px] lg:w-[440px] bg-white border-t md:border-t-0 md:border-l border-indigo-100 flex flex-col z-40 shadow-[0_-10px_40px_rgba(13,31,92,0.15)] md:shadow-[-10px_0_40px_rgba(13,31,92,0.05)] shrink-0 h-[55vh] md:h-full overflow-hidden transition-all duration-300 rounded-t-[2rem] md:rounded-none">
       <div className="w-full flex justify-center py-3 md:hidden absolute top-0 left-0 z-30">
         <div className="w-12 h-1.5 bg-indigo-100 rounded-full"></div>
       </div>

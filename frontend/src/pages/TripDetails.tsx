@@ -116,7 +116,7 @@ export default function TripDetails() {
 
   return (
     <div
-      className="h-screen w-full flex flex-col bg-[#f0f4ff] text-[#0d1f5c] overflow-hidden"
+      className="h-[100svh] w-full flex flex-col bg-[#f0f4ff] text-[#0d1f5c] overflow-hidden"
       style={{ fontFamily: '"Raleway", sans-serif' }}
     >
       {/* ── TOP NAVBAR ── */}

@@ -277,7 +277,7 @@ export default function NewTravel() {
 
   return (
     <div
-      className="h-screen bg-[#f0f4ff] flex flex-col md:flex-row text-[#0d1f5c] overflow-hidden"
+      className={`h-[100svh] bg-[#f0f4ff] flex flex-col md:flex-row text-[#0d1f5c] overflow-y-auto md:overflow-hidden no-scrollbar ${routesData && routesData.routes?.length > 0 ? "pb-[55vh] md:pb-0" : ""}`}
       style={{ fontFamily: '"Raleway", sans-serif' }}
     >
       <div className="w-full md:w-[420px] bg-[#f8f9ff] flex flex-col z-20 shadow-2xl shrink-0 h-auto md:h-full overflow-hidden border-r border-indigo-100">
@@ -438,7 +438,7 @@ export default function NewTravel() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-[40vh] md:min-h-full relative z-0">
+      <div className="flex-1 min-h-[40vh] md:min-h-full relative z-0 order-first md:order-none">
         <MapSection
           originCoords={originCoords}
           originStr={originStr}
