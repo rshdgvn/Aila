@@ -40,7 +40,7 @@ export default function Settings() {
 
   return (
     <div
-      className="min-h-screen w-full bg-[#f4f7ff] flex flex-col md:flex-row text-[#0d1f5c]"
+      className="min-h-[100svh] w-full bg-[#f4f7ff] flex flex-col md:flex-row text-[#0d1f5c]"
       style={{ fontFamily: '"Raleway", sans-serif' }}
     >
       <Sidebar

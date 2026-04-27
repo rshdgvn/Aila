@@ -144,9 +144,52 @@ export default function SavedPlaces() {
     });
   };
 
+  const renderHeader = (isMobile: boolean) => (
+    <div
+      className={`${
+        isMobile ? "md:hidden flex" : "hidden md:flex"
+      } items-center justify-between bg-white px-6 py-5 border-b border-indigo-100 z-30 ${
+        !isMobile ? "sticky top-0" : ""
+      } shrink-0 ${isMobile ? "order-1" : ""} min-h-[82px]`}
+    >
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="w-10 h-10 flex items-center justify-center bg-[#f8f9ff] text-[#0d1f5c] rounded-xl hover:bg-indigo-100 transition-colors"
+        >
+          <ArrowLeft size={20} strokeWidth={2.5} />
+        </button>
+        <h1
+          style={{ fontFamily: '"Sora", sans-serif' }}
+          className="text-xl font-black text-[#0d1f5c]"
+        >
+          My Places
+        </h1>
+      </div>
+      <div className="flex items-center gap-2">
+        {!isAdding ? (
+          <button
+            onClick={() => setIsAdding(true)}
+            className="h-10 flex items-center gap-2 bg-indigo-50 text-indigo-600 px-4 rounded-xl font-bold hover:bg-indigo-100 transition-colors shadow-sm"
+          >
+            <Plus size={16} strokeWidth={3} /> Add
+          </button>
+        ) : (
+          <div className="h-10 w-0"></div>
+        )}
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="md:hidden w-10 h-10 flex items-center justify-center bg-indigo-50 text-indigo-600 rounded-xl"
+        >
+          <Menu size={22} />
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div
-      className="h-screen w-full bg-[#f4f7ff] flex flex-col md:flex-row text-[#0d1f5c]"
+      className="h-[100svh] w-full bg-[#f4f7ff] flex flex-col md:flex-row text-[#0d1f5c]"
       style={{ fontFamily: '"Raleway", sans-serif' }}
     >
       <Sidebar
@@ -156,39 +199,10 @@ export default function SavedPlaces() {
       />
 
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        <div className="flex-1 flex flex-col bg-[#f4f7ff] overflow-y-auto custom-scrollbar shadow-inner z-10 border-r border-indigo-50">
-          <div className="flex items-center justify-between bg-white px-6 py-5 border-b border-indigo-100 z-30 sticky top-0 shrink-0">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate(-1)}
-                className="p-2 bg-[#f8f9ff] text-[#0d1f5c] rounded-xl hover:bg-indigo-100 transition-colors"
-              >
-                <ArrowLeft size={20} strokeWidth={2.5} />
-              </button>
-              <h1
-                style={{ fontFamily: '"Sora", sans-serif' }}
-                className="text-xl font-black text-[#0d1f5c]"
-              >
-                My Places
-              </h1>
-            </div>
-            <div className="flex items-center gap-2">
-              {!isAdding && (
-                <button
-                  onClick={() => setIsAdding(true)}
-                  className="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-4 py-2 rounded-xl font-bold hover:bg-indigo-100 transition-colors shadow-sm"
-                >
-                  <Plus size={16} strokeWidth={3} /> Add
-                </button>
-              )}
-              <button
-                onClick={() => setIsSidebarOpen(true)}
-                className="md:hidden p-2 bg-indigo-50 text-indigo-600 rounded-xl"
-              >
-                <Menu size={22} />
-              </button>
-            </div>
-          </div>
+        {renderHeader(true)}
+
+        <div className="flex-1 flex flex-col bg-[#f4f7ff] overflow-y-auto custom-scrollbar shadow-inner z-10 border-r border-indigo-50 order-3 md:order-1">
+          {renderHeader(false)}
 
           <div className="p-6">
             <div className="grid grid-cols-1 gap-4">
@@ -246,7 +260,7 @@ export default function SavedPlaces() {
           </div>
         </div>
 
-        <div className="w-full md:w-[450px] lg:w-[500px] flex flex-col bg-white shrink-0 z-0 h-[60vh] md:h-full relative">
+        <div className="w-full md:w-[450px] lg:w-[500px] flex flex-col bg-white shrink-0 z-0 h-[55vh] md:h-full relative order-2 md:order-2">
           <div className="h-2/3 md:h-1/2 relative">
             <MapContainer
               center={[14.5995, 120.9842]}
