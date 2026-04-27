@@ -28,6 +28,13 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address (e.g., name@example.com).");
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await authApi.login({ email, password });
@@ -219,15 +226,6 @@ export default function Login() {
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-              </div>
-
-              <div className="flex justify-end mb-2">
-                <a
-                  href="#"
-                  className="text-[13px] font-bold text-indigo-600 hover:text-[#0d1f5c] transition-colors"
-                >
-                  Forgot password?
-                </a>
               </div>
 
               <button
